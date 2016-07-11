@@ -10,7 +10,6 @@
 #include <fcntl.h>
 #include "Socket.h"
 #include "Network.h"
-#include "Utils.h"
 
 static uint8_t TEMP_BUFFER[65536];
 
@@ -181,7 +180,7 @@ bool Socket::connect(uint32_t address, uint16_t newPort)
     ipAddress = address;
     port = newPort;
     
-    std::cout << "Connecting to " << ipToString(ipAddress) << ":" << static_cast<int>(port) << std::endl;
+    std::cout << "Connecting to " << Network::ipToString(ipAddress) << ":" << static_cast<int>(port) << std::endl;
     
     sockaddr_in addr;
     memset(&addr, 0, sizeof(addr));
@@ -198,7 +197,7 @@ bool Socket::connect(uint32_t address, uint16_t newPort)
         else
         {
             int error = errno;
-            std::cerr << "Failed to connect to " << ipToString(ipAddress) << ":" << port << ", error: " << error << std::endl;
+            std::cerr << "Failed to connect to " << Network::ipToString(ipAddress) << ":" << port << ", error: " << error << std::endl;
             return false;
         }
     }
@@ -307,7 +306,7 @@ bool Socket::read()
         
         if (connecting)
         {
-            std::cerr << "Failed to connect to " << ipToString(ipAddress) << ":" << port << ", error: " << error << std::endl;
+            std::cerr << "Failed to connect to " << Network::ipToString(ipAddress) << ":" << port << ", error: " << error << std::endl;
             connecting = false;
         }
         else
@@ -358,7 +357,7 @@ bool Socket::write()
     {
         connecting = false;
         ready = true;
-        std::cout << "Socket connected to " << ipToString(ipAddress) << ":" << port << std::endl;
+        std::cout << "Socket connected to " << Network::ipToString(ipAddress) << ":" << port << std::endl;
         if (connectCallback)
         {
             connectCallback();

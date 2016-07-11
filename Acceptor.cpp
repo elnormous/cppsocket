@@ -8,7 +8,7 @@
 #include <netinet/in.h>
 #include <unistd.h>
 #include "Acceptor.h"
-#include "Utils.h"
+#include "Network.h"
 
 static const int WAITING_QUEUE_SIZE = 5;
 
@@ -117,7 +117,7 @@ bool Acceptor::read()
     }
     else
     {
-        std::cout << "Client connected from " << ipToString(address.sin_addr.s_addr) << std::endl;
+        std::cout << "Client connected from " << Network::ipToString(address.sin_addr.s_addr) << std::endl;
         
         Socket socket(network, clientFd);
         
