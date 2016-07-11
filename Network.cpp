@@ -5,9 +5,13 @@
 #include <algorithm>
 #include <iostream>
 #include <map>
+#ifdef _MSC_VER
+#include <winsock2.h>
+#else
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <poll.h>
+#endif
 #include "Network.h"
 #include "Socket.h"
 
@@ -23,7 +27,13 @@ std::string Network::ipToString(uint32_t ip)
 
 Network::Network()
 {
-    
+#ifdef _MSC_VER
+    static bool read = false;
+    WORD sockVersion = MAKEWORD(2, 2);
+    WSADATA wsaData;
+    WSAStartup(sockVersion, &wsaData);
+
+#endif
 }
 
 bool Network::update()
@@ -31,7 +41,7 @@ bool Network::update()
     std::vector<pollfd> pollFds;
     pollFds.reserve(sockets.size());
     
-    std::map<int, std::reference_wrapper<Socket>> socketMap;
+    std::map<socket_t, std::reference_wrapper<Socket>> socketMap;
     
     for (auto socket : sockets)
     {
@@ -46,12 +56,16 @@ bool Network::update()
         
         pollFds.push_back(pollFd);
         
-        socketMap.insert(std::pair<uint32_t, std::reference_wrapper<Socket>>(socket.get().socketFd, socket));
+        socketMap.insert(std::pair<socket_t, std::reference_wrapper<Socket>>(socket.get().socketFd, socket));
     }
     
+#ifdef _MSC_VER
+    if (WSAPoll(pollFds.data(), static_cast<ULONG>(pollFds.size()), 0) < 0)
+#else
     if (poll(pollFds.data(), static_cast<nfds_t>(pollFds.size()), 0) < 0)
+#endif
     {
-        int error = errno;
+        int error = getLastError();
         std::cerr << "Poll failed, error: " << error << std::endl;
         return false;
     }

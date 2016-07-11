@@ -4,25 +4,30 @@
 
 #include <iostream>
 #include <cstring>
+#ifdef _MSC_VER
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#else
 #include <sys/socket.h>
 #include <netdb.h>
 #include <unistd.h>
+#endif
 #include <fcntl.h>
 #include "Socket.h"
 #include "Network.h"
 
 static uint8_t TEMP_BUFFER[65536];
 
-Socket::Socket(Network& pNetwork, int pSocketFd):
+Socket::Socket(Network& pNetwork, socket_t pSocketFd):
     network(pNetwork), socketFd(pSocketFd)
 {
-    if (socketFd < 0)
+    if (socketFd == INVALID_SOCKET)
     {
         socketFd = socket(AF_INET, SOCK_STREAM, 0);
         
-        if (socketFd < 0)
+        if (socketFd == INVALID_SOCKET)
         {
-            int error = errno;
+            int error = Network::getLastError();
             std::cerr << "Failed to create socket, error: " << error << std::endl;
         }
     }
@@ -36,9 +41,13 @@ Socket::~Socket()
     
     if (socketFd >= 0)
     {
+#ifdef _MSC_VER
+        if (closesocket(socketFd) < 0)
+#else
         if (::close(socketFd) < 0)
+#endif
         {
-            int error = errno;
+            int error = Network::getLastError();
             std::cerr << "Failed to close socket, error: " << error << std::endl;
         }
         else
@@ -62,7 +71,7 @@ Socket::Socket(Socket&& other):
 {
     network.addSocket(*this);
     
-    other.socketFd = -1;
+    other.socketFd = INVALID_SOCKET;
     other.connecting = false;
     other.ready = false;
     other.blocking = true;
@@ -85,7 +94,7 @@ Socket& Socket::operator=(Socket&& other)
     readCallback = std::move(other.readCallback);
     closeCallback = std::move(other.closeCallback);
     
-    other.socketFd = -1;
+    other.socketFd = INVALID_SOCKET;
     other.connecting = false;
     other.ready = false;
     other.blocking = true;
@@ -104,12 +113,16 @@ bool Socket::close()
 
     if (socketFd >= 0)
     {
+#ifdef _MSC_VER
+        int result = closesocket(socketFd);
+#else
         int result = ::close(socketFd);
-        socketFd = -1;
+#endif
+        socketFd = INVALID_SOCKET;
 
         if (result < 0)
         {
-            int error = errno;
+            int error = Network::getLastError();
             std::cerr << "Failed to close socket, error: " << error << std::endl;
             return false;
         }
@@ -146,7 +159,7 @@ bool Socket::connect(const std::string& address, uint16_t newPort)
     addrinfo* result;
     if (getaddrinfo(addressStr.c_str(), portStr.empty() ? nullptr : portStr.c_str(), nullptr, &result) != 0)
     {
-        int error = errno;
+        int error = Network::getLastError();
         std::cerr << "Failed to get address info, error: " << error << std::endl;
         return false;
     }
@@ -165,13 +178,13 @@ bool Socket::connect(uint32_t address, uint16_t newPort)
     ready = false;
     connecting = false;
 
-    if (socketFd < 0)
+    if (socketFd == INVALID_SOCKET)
     {
         socketFd = socket(AF_INET, SOCK_STREAM, 0);
         
-        if (socketFd < 0)
+        if (socketFd == INVALID_SOCKET)
         {
-            int error = errno;
+            int error = Network::getLastError();
             std::cerr << "Failed to create socket, error: " << error << std::endl;
             return false;
         }
@@ -190,13 +203,14 @@ bool Socket::connect(uint32_t address, uint16_t newPort)
     
     if (::connect(socketFd, reinterpret_cast<const sockaddr*>(&addr), sizeof(addr)) < 0)
     {
-        if (errno == EINPROGRESS)
+        int error = Network::getLastError();
+
+        if (error == EINPROGRESS)
         {
             connecting = true;
         }
         else
         {
-            int error = errno;
             std::cerr << "Failed to connect to " << Network::ipToString(ipAddress) << ":" << port << ", error: " << error << std::endl;
             return false;
         }
@@ -219,7 +233,7 @@ bool Socket::disconnect()
     {
         if (shutdown(socketFd, 0) < 0)
         {
-            int error = errno;
+            int error = Network::getLastError();
             std::cerr << "Failed to shut down socket, error: " << error << std::endl;
             return false;
         }
@@ -234,7 +248,7 @@ bool Socket::disconnect()
 
 bool Socket::startRead()
 {
-    if (socketFd < 0)
+    if (socketFd == INVALID_SOCKET)
     {
         std::cerr << "Can not start reading, invalid socket" << std::endl;
         return false;
@@ -262,7 +276,7 @@ void Socket::setCloseCallback(const std::function<void()>& newCloseCallback)
 
 bool Socket::setBlocking(bool newBlocking)
 {
-#ifdef WIN32
+#ifdef _MSC_VER
     unsigned long mode = newBlocking ? 0 : 1;
     if (ioctlsocket(socketFd, FIONBIO, &mode) != 0)
     {
@@ -298,11 +312,11 @@ bool Socket::send(std::vector<uint8_t> buffer)
 
 bool Socket::read()
 {
-    ssize_t size = recv(socketFd, TEMP_BUFFER, sizeof(TEMP_BUFFER), 0);
+    int size = static_cast<int>(recv(socketFd, reinterpret_cast<char*>(TEMP_BUFFER), sizeof(TEMP_BUFFER), 0));
     
     if (size < 0)
     {
-        int error = errno;
+        int error = Network::getLastError();
         
         if (connecting)
         {
@@ -366,11 +380,11 @@ bool Socket::write()
 
     if (ready && !outData.empty())
     {
-        ssize_t size = ::send(socketFd, outData.data(), outData.size(), 0);
+        int size = static_cast<int>(::send(socketFd, reinterpret_cast<const char*>(outData.data()), static_cast<int>(outData.size()), 0));
 
         if (size < 0)
         {
-            int error = errno;
+            int error = Network::getLastError();
             if (error != EAGAIN && error != EWOULDBLOCK)
             {
                 std::cerr << "Failed to send data, error: " << error << std::endl;
@@ -380,7 +394,7 @@ bool Socket::write()
                 return false;
             }
         }
-        else if (size != static_cast<ssize_t>(outData.size()))
+        else if (size != static_cast<int>(outData.size()))
         {
             std::cerr << "Failed to send all data" << std::endl;
         }
