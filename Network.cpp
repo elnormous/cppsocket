@@ -28,11 +28,27 @@ std::string Network::ipToString(uint32_t ip)
 Network::Network()
 {
 #ifdef _MSC_VER
-    static bool read = false;
-    WORD sockVersion = MAKEWORD(2, 2);
-    WSADATA wsaData;
-    WSAStartup(sockVersion, &wsaData);
+    static bool ready = false;
+    if (!ready)
+    {
+        WORD sockVersion = MAKEWORD(2, 2);
+        WSADATA wsaData;
+        int error = WSAStartup(sockVersion, &wsaData);
+        if (error != 0)
+        {
+            std::cerr << "WSAStartup failed, error: " << error << std::endl;
+            return;
+        }
+        
+        if (LOBYTE(wsaData.wVersion) != 2 || HIBYTE(wsaData.wVersion) != 2)
+        {
+            std::cerr << "Incorrect Winsock version" << std::endl;
+            WSACleanup();
+            return;
+        }
 
+        ready = true;
+    }
 #endif
 }
 
