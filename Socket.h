@@ -8,6 +8,7 @@
 #include <functional>
 
 #ifdef _MSC_VER
+#include <winsock2.h>
 typedef SOCKET socket_t;
 #else
 typedef int socket_t;
