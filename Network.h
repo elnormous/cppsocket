@@ -12,6 +12,8 @@ class Network
 {
     friend Socket;
 public:
+    static std::string ipToString(uint32_t ip);
+
     Network();
     
     Network(const Network&) = delete;
