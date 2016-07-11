@@ -380,7 +380,12 @@ bool Socket::write()
 
     if (ready && !outData.empty())
     {
-        int size = static_cast<int>(::send(socketFd, reinterpret_cast<const char*>(outData.data()), static_cast<int>(outData.size()), 0));
+#ifdef _MSC_VER
+        int dataSize = static_cast<int>(outData.size());
+#else
+        size_t dataSize = outData.size();
+#endif
+        int size = static_cast<int>(::send(socketFd, reinterpret_cast<const char*>(outData.data()), dataSize, 0));
 
         if (size < 0)
         {
