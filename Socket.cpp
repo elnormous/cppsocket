@@ -39,7 +39,7 @@ Socket::~Socket()
 {
     network.removeSocket(*this);
     
-    if (socketFd >= 0)
+    if (socketFd != INVALID_SOCKET)
     {
 #ifdef _MSC_VER
         if (closesocket(socketFd) < 0)
