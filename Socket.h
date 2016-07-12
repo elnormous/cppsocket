@@ -21,7 +21,7 @@ class Socket
 {
     friend Network;
 public:
-    Socket(Network& pNetwork, socket_t pSocketFd = -1);
+    Socket(Network& pNetwork, socket_t pSocketFd = INVALID_SOCKET);
     virtual ~Socket();
     
     Socket(const Socket&) = delete;
