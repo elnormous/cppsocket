@@ -11,7 +11,7 @@
 class Acceptor: public Socket
 {
 public:
-    Acceptor(Network& network, int socketFd = INVALID_SOCKET);
+    Acceptor(Network& network, socket_t socketFd = INVALID_SOCKET);
     virtual ~Acceptor();
     
     Acceptor(Acceptor&& other);

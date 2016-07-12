@@ -16,7 +16,7 @@
 
 static const int WAITING_QUEUE_SIZE = 5;
 
-Acceptor::Acceptor(Network& network, int socketFd):
+Acceptor::Acceptor(Network& network, socket_t socketFd):
     Socket(network, socketFd)
 {
 
