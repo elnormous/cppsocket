@@ -110,9 +110,9 @@ bool Acceptor::read()
     
     sockaddr_in address;
 #ifdef _MSC_VER
-    int addressLength;
+    int addressLength = static_cast<int>(sizeof(address));
 #else
-    socklen_t addressLength;
+    socklen_t addressLength = sizeof(address);
 #endif
     
     socket_t clientFd = ::accept(socketFd, reinterpret_cast<sockaddr*>(&address), &addressLength);
