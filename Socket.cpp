@@ -219,7 +219,11 @@ bool Socket::connect(uint32_t address, uint16_t newPort)
     {
         // connected
         ready = true;
-        if (connectCallback) connectCallback();
+        std::cout << "Socket connected to " << Network::ipToString(ipAddress) << ":" << port << std::endl;
+        if (connectCallback)
+        {
+            connectCallback();
+        }
     }
     
     return true;
