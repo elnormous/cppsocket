@@ -1,5 +1,5 @@
 //
-//  rtmp_relay
+//  cppsocket
 //
 
 #include <algorithm>
