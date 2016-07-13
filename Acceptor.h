@@ -18,10 +18,10 @@ public:
     Acceptor& operator=(Acceptor&& other);
     
     bool startAccept(uint16_t newPort);
-    void setAcceptCallback(const std::function<void(Socket)>& newAcceptCallback);
+    void setAcceptCallback(const std::function<void(Socket&&)>& newAcceptCallback);
 
 protected:
     virtual bool read();
     
-    std::function<void(Socket)> acceptCallback;
+    std::function<void(Socket&&)> acceptCallback;
 };
