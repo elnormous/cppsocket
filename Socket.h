@@ -6,6 +6,7 @@
 
 #include <vector>
 #include <functional>
+#include <cstdint>
 
 #ifdef _MSC_VER
 #include <winsock2.h>
@@ -31,13 +32,9 @@ public:
     Socket& operator=(Socket&& other);
 
     bool close();
-    
-    bool connect(const std::string& address, uint16_t newPort = 0);
-    bool connect(uint32_t address, uint16_t newPort);
     bool disconnect();
-    
+
     bool startRead();
-    void setConnectCallback(const std::function<void()>& newConnectCallback);
     void setReadCallback(const std::function<void(const std::vector<uint8_t>&)>& newReadCallback);
     void setCloseCallback(const std::function<void()>& newCloseCallback);
     
@@ -45,11 +42,11 @@ public:
     
     uint32_t getIPAddress() const { return ipAddress; }
     uint16_t getPort() const { return port; }
-    
+
+    bool isConnecting() const { return connecting; }
     bool isBlocking() const { return blocking; }
     bool setBlocking(bool newBlocking);
     
-    bool isConnecting() const { return connecting; }
     bool isReady() const { return ready; }
 
     bool hasOutData() const { return !outData.empty(); }
@@ -63,14 +60,13 @@ protected:
     
     socket_t socketFd = INVALID_SOCKET;
     
-    bool connecting = false;
     bool ready = false;
+    bool connecting = false;
     bool blocking = true;
 
     uint32_t ipAddress = 0;
     uint16_t port = 0;
     
-    std::function<void()> connectCallback;
     std::function<void(const std::vector<uint8_t>&)> readCallback;
     std::function<void()> closeCallback;
 
