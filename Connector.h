@@ -7,22 +7,25 @@
 #include <functional>
 #include "Socket.h"
 
-class Connector: public Socket
+namespace cppsocket
 {
-public:
-    Connector(Network& network);
-    virtual ~Connector();
+    class Connector: public Socket
+    {
+    public:
+        Connector(Network& network);
+        virtual ~Connector();
 
-    Connector(Connector&& other);
-    Connector& operator=(Connector&& other);
+        Connector(Connector&& other);
+        Connector& operator=(Connector&& other);
 
-    bool connect(const std::string& address, uint16_t newPort = 0);
-    bool connect(uint32_t address, uint16_t newPort);
+        bool connect(const std::string& address, uint16_t newPort = 0);
+        bool connect(uint32_t address, uint16_t newPort);
 
-    void setConnectCallback(const std::function<void()>& newConnectCallback);
+        void setConnectCallback(const std::function<void()>& newConnectCallback);
     
-protected:
-    virtual bool write();
+    protected:
+        virtual bool write();
     
-    std::function<void()> connectCallback;
-};
+        std::function<void()> connectCallback;
+    };
+}

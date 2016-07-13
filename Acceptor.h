@@ -8,20 +8,23 @@
 #include <functional>
 #include "Socket.h"
 
-class Acceptor: public Socket
+namespace cppsocket
 {
-public:
-    Acceptor(Network& network);
-    virtual ~Acceptor();
+    class Acceptor: public Socket
+    {
+    public:
+        Acceptor(Network& network);
+        virtual ~Acceptor();
     
-    Acceptor(Acceptor&& other);
-    Acceptor& operator=(Acceptor&& other);
+        Acceptor(Acceptor&& other);
+        Acceptor& operator=(Acceptor&& other);
     
-    bool startAccept(uint16_t newPort);
-    void setAcceptCallback(const std::function<void(Socket&&)>& newAcceptCallback);
+        bool startAccept(uint16_t newPort);
+        void setAcceptCallback(const std::function<void(Socket&&)>& newAcceptCallback);
 
-protected:
-    virtual bool read();
+    protected:
+        virtual bool read();
     
-    std::function<void(Socket&&)> acceptCallback;
-};
+        std::function<void(Socket&&)> acceptCallback;
+    };
+}

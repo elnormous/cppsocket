@@ -16,60 +16,63 @@ typedef int socket_t;
 #define INVALID_SOCKET -1
 #endif
 
-class Network;
-
-class Socket
+namespace cppsocket
 {
-    friend Network;
-public:
-    Socket(Network& pNetwork, socket_t pSocketFd = INVALID_SOCKET);
-    virtual ~Socket();
-    
-    Socket(const Socket&) = delete;
-    Socket& operator=(const Socket&) = delete;
-    
-    Socket(Socket&& other);
-    Socket& operator=(Socket&& other);
+    class Network;
 
-    bool close();
-    bool disconnect();
+    class Socket
+    {
+        friend Network;
+    public:
+        Socket(Network& pNetwork, socket_t pSocketFd = INVALID_SOCKET);
+        virtual ~Socket();
+    
+        Socket(const Socket&) = delete;
+        Socket& operator=(const Socket&) = delete;
+    
+        Socket(Socket&& other);
+        Socket& operator=(Socket&& other);
 
-    bool startRead();
-    void setReadCallback(const std::function<void(const std::vector<uint8_t>&)>& newReadCallback);
-    void setCloseCallback(const std::function<void()>& newCloseCallback);
-    
-    bool send(std::vector<uint8_t> buffer);
-    
-    uint32_t getIPAddress() const { return ipAddress; }
-    uint16_t getPort() const { return port; }
+        bool close();
+        bool disconnect();
 
-    bool isConnecting() const { return connecting; }
-    bool isBlocking() const { return blocking; }
-    bool setBlocking(bool newBlocking);
+        bool startRead();
+        void setReadCallback(const std::function<void(const std::vector<uint8_t>&)>& newReadCallback);
+        void setCloseCallback(const std::function<void()>& newCloseCallback);
     
-    bool isReady() const { return ready; }
+        bool send(std::vector<uint8_t> buffer);
+    
+        uint32_t getIPAddress() const { return ipAddress; }
+        uint16_t getPort() const { return port; }
 
-    bool hasOutData() const { return !outData.empty(); }
+        bool isConnecting() const { return connecting; }
+        bool isBlocking() const { return blocking; }
+        bool setBlocking(bool newBlocking);
     
-protected:
-    virtual bool read();
-    virtual bool write();
-    virtual bool disconnected();
-    
-    Network& network;
-    
-    socket_t socketFd = INVALID_SOCKET;
-    
-    bool ready = false;
-    bool connecting = false;
-    bool blocking = true;
+        bool isReady() const { return ready; }
 
-    uint32_t ipAddress = 0;
-    uint16_t port = 0;
+        bool hasOutData() const { return !outData.empty(); }
     
-    std::function<void(const std::vector<uint8_t>&)> readCallback;
-    std::function<void()> closeCallback;
+    protected:
+        virtual bool read();
+        virtual bool write();
+        virtual bool disconnected();
+    
+        Network& network;
+    
+        socket_t socketFd = INVALID_SOCKET;
+    
+        bool ready = false;
+        bool connecting = false;
+        bool blocking = true;
 
-    std::vector<uint8_t> inData;
-    std::vector<uint8_t> outData;
-};
+        uint32_t ipAddress = 0;
+        uint16_t port = 0;
+    
+        std::function<void(const std::vector<uint8_t>&)> readCallback;
+        std::function<void()> closeCallback;
+
+        std::vector<uint8_t> inData;
+        std::vector<uint8_t> outData;
+    };
+}

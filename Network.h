@@ -9,33 +9,36 @@
 #include <string>
 #include "Socket.h"
 
-class Network
+namespace cppsocket
 {
-    friend Socket;
-public:
-    static std::string ipToString(uint32_t ip);
-    static int getLastError()
+    class Network
     {
-#ifdef _MSC_VER
-        return WSAGetLastError();
-#else   
-        return errno;
-#endif
-    }
+        friend Socket;
+    public:
+        static std::string ipToString(uint32_t ip);
+        static int getLastError()
+        {
+    #ifdef _MSC_VER
+            return WSAGetLastError();
+    #else   
+            return errno;
+    #endif
+        }
 
-    Network();
+        Network();
     
-    Network(const Network&) = delete;
-    Network& operator=(const Network&) = delete;
+        Network(const Network&) = delete;
+        Network& operator=(const Network&) = delete;
     
-    Network(Network&&) = delete;
-    Network& operator=(Network&&) = delete;
+        Network(Network&&) = delete;
+        Network& operator=(Network&&) = delete;
     
-    bool update();
+        bool update();
     
-protected:
-    void addSocket(Socket& socket);
-    void removeSocket(Socket& socket);
+    protected:
+        void addSocket(Socket& socket);
+        void removeSocket(Socket& socket);
     
-    std::vector<std::reference_wrapper<Socket>> sockets;
-};
+        std::vector<std::reference_wrapper<Socket>> sockets;
+    };
+}
