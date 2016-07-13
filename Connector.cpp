@@ -136,6 +136,27 @@ namespace cppsocket
         return true;
     }
 
+    bool Connector::disconnect()
+    {
+        ready = false;
+
+        if (socketFd != INVALID_SOCKET)
+        {
+            if (shutdown(socketFd, 0) < 0)
+            {
+                int error = Network::getLastError();
+                std::cerr << "Failed to shut down socket, error: " << error << std::endl;
+                return false;
+            }
+            else
+            {
+                std::cout << "Socket shut down" << std::endl;
+            }
+        }
+
+        return true;
+    }
+
     void Connector::setConnectCallback(const std::function<void()>& newConnectCallback)
     {
         connectCallback = newConnectCallback;

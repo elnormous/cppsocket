@@ -20,6 +20,7 @@ namespace cppsocket
 
         bool connect(const std::string& address, uint16_t newPort = 0);
         bool connect(uint32_t address, uint16_t newPort);
+        bool disconnect();
 
         void setConnectCallback(const std::function<void()>& newConnectCallback);
     

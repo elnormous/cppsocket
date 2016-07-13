@@ -134,27 +134,6 @@ namespace cppsocket
         return true;
     }
 
-    bool Socket::disconnect()
-    {
-        ready = false;
-
-        if (socketFd >= 0)
-        {
-            if (shutdown(socketFd, 0) < 0)
-            {
-                int error = Network::getLastError();
-                std::cerr << "Failed to shut down socket, error: " << error << std::endl;
-                return false;
-            }
-            else
-            {
-                std::cout << "Socket shut down" << std::endl;
-            }
-        }
-
-        return true;
-    }
-
     bool Socket::startRead()
     {
         if (socketFd == INVALID_SOCKET)
