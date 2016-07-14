@@ -119,6 +119,10 @@ namespace cppsocket
             else
             {
                 std::cerr << "Failed to connect to " << Network::ipToString(ipAddress) << ":" << port << ", error: " << error << std::endl;
+                if (connectErrorCallback)
+                {
+                    connectErrorCallback();
+                }
                 return false;
             }
         }
@@ -160,6 +164,11 @@ namespace cppsocket
     void Connector::setConnectCallback(const std::function<void()>& newConnectCallback)
     {
         connectCallback = newConnectCallback;
+    }
+
+    void Connector::setConnectErrorCallback(const std::function<void()>& newConnectErrorCallback)
+    {
+        connectErrorCallback = newConnectErrorCallback;
     }
 
     bool Connector::write()

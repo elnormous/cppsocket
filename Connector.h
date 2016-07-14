@@ -23,10 +23,12 @@ namespace cppsocket
         bool disconnect();
 
         void setConnectCallback(const std::function<void()>& newConnectCallback);
-    
+        void setConnectErrorCallback(const std::function<void()>& newConnectErrorCallback);
+
     protected:
         virtual bool write();
-    
+
         std::function<void()> connectCallback;
+        std::function<void()> connectErrorCallback;
     };
 }

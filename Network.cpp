@@ -41,7 +41,7 @@ namespace cppsocket
                 std::cerr << "WSAStartup failed, error: " << error << std::endl;
                 return;
             }
-        
+
             if (LOBYTE(wsaData.wVersion) != 2 || HIBYTE(wsaData.wVersion) != 2)
             {
                 std::cerr << "Incorrect Winsock version" << std::endl;
@@ -58,9 +58,9 @@ namespace cppsocket
     {
         std::vector<pollfd> pollFds;
         pollFds.reserve(sockets.size());
-    
+
         std::map<socket_t, std::reference_wrapper<Socket>> socketMap;
-    
+
         for (auto socket : sockets)
         {
             pollfd pollFd;
@@ -71,12 +71,12 @@ namespace cppsocket
             {
                 pollFd.events |= POLLOUT;
             }
-        
+
             pollFds.push_back(pollFd);
-        
+
             socketMap.insert(std::pair<socket_t, std::reference_wrapper<Socket>>(socket.get().socketFd, socket));
         }
-    
+
     #ifdef _MSC_VER
         if (WSAPoll(pollFds.data(), static_cast<ULONG>(pollFds.size()), 0) < 0)
     #else
@@ -87,13 +87,13 @@ namespace cppsocket
             std::cerr << "Poll failed, error: " << error << std::endl;
             return false;
         }
-    
+
         for (uint32_t i = 0; i < pollFds.size(); ++i)
         {
             pollfd pollFd = pollFds[i];
 
             auto iter = socketMap.find(pollFd.fd);
-        
+
             if (iter != socketMap.end())
             {
                 if (pollFd.revents & POLLIN)
@@ -107,7 +107,7 @@ namespace cppsocket
                 }
             }
         }
-    
+
         return true;
     }
 
@@ -119,7 +119,7 @@ namespace cppsocket
     void Network::removeSocket(Socket& socket)
     {
         std::vector<std::reference_wrapper<Socket>>::iterator i = std::find_if(sockets.begin(), sockets.end(), [&socket](const std::reference_wrapper<Socket>& sock) { return &socket == &sock.get(); });
-    
+
         if (i != sockets.end())
         {
             sockets.erase(i);

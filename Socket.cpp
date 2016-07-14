@@ -26,21 +26,21 @@ namespace cppsocket
         if (socketFd == INVALID_SOCKET)
         {
             socketFd = socket(AF_INET, SOCK_STREAM, 0);
-        
+
             if (socketFd == INVALID_SOCKET)
             {
                 int error = Network::getLastError();
                 std::cerr << "Failed to create socket, error: " << error << std::endl;
             }
         }
-    
+
         network.addSocket(*this);
     }
 
     Socket::~Socket()
     {
         network.removeSocket(*this);
-    
+
         if (socketFd != INVALID_SOCKET)
         {
     #ifdef _MSC_VER
@@ -71,7 +71,7 @@ namespace cppsocket
         closeCallback(std::move(other.closeCallback))
     {
         network.addSocket(*this);
-    
+
         other.socketFd = INVALID_SOCKET;
         other.connecting = false;
         other.ready = false;
@@ -92,7 +92,7 @@ namespace cppsocket
         port = other.port;
         readCallback = std::move(other.readCallback);
         closeCallback = std::move(other.closeCallback);
-    
+
         other.socketFd = INVALID_SOCKET;
         other.connecting = false;
         other.ready = false;
@@ -101,7 +101,7 @@ namespace cppsocket
         other.port = 0;
         other.readCallback = nullptr;
         other.closeCallback = nullptr;
-    
+
         return *this;
     }
 
@@ -141,9 +141,9 @@ namespace cppsocket
             std::cerr << "Can not start reading, invalid socket" << std::endl;
             return false;
         }
-    
+
         ready = true;
-    
+
         return true;
     }
 
@@ -169,15 +169,15 @@ namespace cppsocket
         int flags = fcntl(socketFd, F_GETFL, 0);
         if (flags < 0) return false;
         flags = newBlocking ? (flags&~O_NONBLOCK) : (flags|O_NONBLOCK);
-    
+
         if (fcntl(socketFd, F_SETFL, flags) != 0)
         {
             return false;
         }
     #endif
-    
+
         blocking = newBlocking;
-    
+
         return true;
     }
 
@@ -196,11 +196,11 @@ namespace cppsocket
     bool Socket::read()
     {
         int size = static_cast<int>(recv(socketFd, reinterpret_cast<char*>(TEMP_BUFFER), sizeof(TEMP_BUFFER), 0));
-    
+
         if (size < 0)
         {
             int error = Network::getLastError();
-        
+
             if (connecting)
             {
                 std::cerr << "Failed to connect to " << Network::ipToString(ipAddress) << ":" << port << ", error: " << error << std::endl;
@@ -217,15 +217,15 @@ namespace cppsocket
                     std::cerr << "Failed to read from socket, error: " << error << std::endl;
                 }
             }
-        
+
             disconnected();
-        
+
             return false;
         }
         else if (size == 0)
         {
             disconnected();
-        
+
             return false;
         }
 
@@ -285,7 +285,7 @@ namespace cppsocket
     #endif
             }
         }
-    
+
         return true;
     }
 
