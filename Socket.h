@@ -34,6 +34,7 @@ namespace cppsocket
         Socket& operator=(Socket&& other);
 
         bool close();
+        virtual void update(float delta);
 
         bool startRead();
         void setReadCallback(const std::function<void(const std::vector<uint8_t>&)>& newReadCallback);

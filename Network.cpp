@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <iostream>
 #include <map>
+#include <chrono>
 #ifdef _MSC_VER
 #include <winsock2.h>
 #else
@@ -22,9 +23,16 @@ namespace cppsocket
         uint8_t* ptr = reinterpret_cast<uint8_t*>(&ip);
 
         return std::to_string(static_cast<uint32_t>(ptr[0])) + "." +
-            std::to_string(static_cast<uint32_t>(ptr[1])) + "." +
-            std::to_string(static_cast<uint32_t>(ptr[2])) + "." +
-            std::to_string(static_cast<uint32_t>(ptr[3]));
+               std::to_string(static_cast<uint32_t>(ptr[1])) + "." +
+               std::to_string(static_cast<uint32_t>(ptr[2])) + "." +
+               std::to_string(static_cast<uint32_t>(ptr[3]));
+    }
+
+    uint64_t Network::getTime()
+    {
+        auto t = std::chrono::steady_clock::now();
+        auto micros = std::chrono::duration_cast<std::chrono::microseconds>(t.time_since_epoch());
+        return static_cast<uint64_t>(micros.count());
     }
 
     Network::Network()
@@ -52,10 +60,16 @@ namespace cppsocket
             ready = true;
         }
 #endif
+
+        previousTime = getTime();
     }
 
     bool Network::update()
     {
+        uint64_t currentTime = getTime();
+        float delta = static_cast<float>((currentTime - previousTime)) / 1000000.0f;
+        previousTime = currentTime;
+
         std::vector<pollfd> pollFds;
         pollFds.reserve(sockets.size());
 
@@ -108,7 +122,7 @@ namespace cppsocket
                     socket.write();
                 }
 
-                socket.update();
+                socket.update(delta);
             }
         }
 

@@ -134,6 +134,10 @@ namespace cppsocket
         return true;
     }
 
+    void Socket::update(float)
+    {
+    }
+
     bool Socket::startRead()
     {
         if (socketFd == INVALID_SOCKET)
