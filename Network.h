@@ -18,11 +18,11 @@ namespace cppsocket
         static std::string ipToString(uint32_t ip);
         static int getLastError()
         {
-    #ifdef _MSC_VER
+#ifdef _MSC_VER
             return WSAGetLastError();
-    #else
+#else
             return errno;
-    #endif
+#endif
         }
 
         Network();

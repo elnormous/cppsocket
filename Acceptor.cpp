@@ -108,11 +108,11 @@ namespace cppsocket
         }
 
         sockaddr_in address;
-    #ifdef _MSC_VER
+#ifdef _MSC_VER
         int addressLength = static_cast<int>(sizeof(address));
-    #else
+#else
         socklen_t addressLength = sizeof(address);
-    #endif
+#endif
 
         socket_t clientFd = ::accept(socketFd, reinterpret_cast<sockaddr*>(&address), &addressLength);
 

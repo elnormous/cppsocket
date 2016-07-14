@@ -29,7 +29,7 @@ namespace cppsocket
 
     Network::Network()
     {
-    #ifdef _MSC_VER
+#ifdef _MSC_VER
         static bool ready = false;
         if (!ready)
         {
@@ -51,7 +51,7 @@ namespace cppsocket
 
             ready = true;
         }
-    #endif
+#endif
     }
 
     bool Network::update()
@@ -77,11 +77,11 @@ namespace cppsocket
             socketMap.insert(std::pair<socket_t, std::reference_wrapper<Socket>>(socket.get().socketFd, socket));
         }
 
-    #ifdef _MSC_VER
+#ifdef _MSC_VER
         if (WSAPoll(pollFds.data(), static_cast<ULONG>(pollFds.size()), 0) < 0)
-    #else
+#else
         if (poll(pollFds.data(), static_cast<nfds_t>(pollFds.size()), 0) < 0)
-    #endif
+#endif
         {
             int error = getLastError();
             std::cerr << "Poll failed, error: " << error << std::endl;
@@ -96,15 +96,19 @@ namespace cppsocket
 
             if (iter != socketMap.end())
             {
+                Socket& socket = iter->second.get();
+
                 if (pollFd.revents & POLLIN)
                 {
-                    iter->second.get().read();
+                    socket.read();
                 }
 
                 if (pollFd.revents & POLLOUT)
                 {
-                    iter->second.get().write();
+                    socket.write();
                 }
+
+                socket.update();
             }
         }
 

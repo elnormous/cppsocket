@@ -43,11 +43,11 @@ namespace cppsocket
 
         if (socketFd != INVALID_SOCKET)
         {
-    #ifdef _MSC_VER
+#ifdef _MSC_VER
             if (closesocket(socketFd) < 0)
-    #else
+#else
             if (::close(socketFd) < 0)
-    #endif
+#endif
             {
                 int error = Network::getLastError();
                 std::cerr << "Failed to close socket, error: " << error << std::endl;
@@ -111,11 +111,11 @@ namespace cppsocket
 
         if (socketFd >= 0)
         {
-    #ifdef _MSC_VER
+#ifdef _MSC_VER
             int result = closesocket(socketFd);
-    #else
+#else
             int result = ::close(socketFd);
-    #endif
+#endif
             socketFd = INVALID_SOCKET;
 
             if (result < 0)
@@ -159,13 +159,13 @@ namespace cppsocket
 
     bool Socket::setBlocking(bool newBlocking)
     {
-    #ifdef _MSC_VER
+#ifdef _MSC_VER
         unsigned long mode = newBlocking ? 0 : 1;
         if (ioctlsocket(socketFd, FIONBIO, &mode) != 0)
         {
             return false;
         }
-    #else
+#else
         int flags = fcntl(socketFd, F_GETFL, 0);
         if (flags < 0) return false;
         flags = newBlocking ? (flags&~O_NONBLOCK) : (flags|O_NONBLOCK);
@@ -174,7 +174,7 @@ namespace cppsocket
         {
             return false;
         }
-    #endif
+#endif
 
         blocking = newBlocking;
 
@@ -229,9 +229,9 @@ namespace cppsocket
             return false;
         }
 
-    #ifdef DEBUG
+#ifdef DEBUG
         std::cout << "Socket received " << size << " bytes" << std::endl;
-    #endif
+#endif
 
         inData.insert(inData.end(), TEMP_BUFFER, TEMP_BUFFER + size);
 
@@ -252,11 +252,11 @@ namespace cppsocket
     {
         if (ready && !outData.empty())
         {
-    #ifdef _MSC_VER
+#ifdef _MSC_VER
             int dataSize = static_cast<int>(outData.size());
-    #else
+#else
             size_t dataSize = outData.size();
-    #endif
+#endif
             int size = static_cast<int>(::send(socketFd, reinterpret_cast<const char*>(outData.data()), dataSize, 0));
 
             if (size < 0)
@@ -280,9 +280,9 @@ namespace cppsocket
             {
                 outData.erase(outData.begin(), outData.begin() + size);
 
-    #ifdef DEBUG
+#ifdef DEBUG
                 std::cout << "Socket sent " << size << " bytes" << std::endl;
-    #endif
+#endif
             }
         }
 
