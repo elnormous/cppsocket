@@ -62,8 +62,8 @@ namespace cppsocket
 
         socket_t socketFd = INVALID_SOCKET;
 
-        bool ready = false;
         bool connecting = false;
+        bool ready = false;
         bool blocking = true;
 
         uint32_t ipAddress = 0;
