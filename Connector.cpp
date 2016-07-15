@@ -29,19 +29,51 @@ namespace cppsocket
 
     Connector::Connector(Connector&& other):
         Socket(std::move(other)),
-        connectCallback(std::move(other.connectCallback))
+        connectTimeout(other.connectTimeout),
+        timeSinceConnect(other.timeSinceConnect),
+        connectCallback(std::move(other.connectCallback)),
+        connectErrorCallback(std::move(other.connectErrorCallback))
     {
-        other.connectCallback = nullptr;
+        other.connectTimeout = 10.0f;
+        other.timeSinceConnect = 0.0f;
     }
 
     Connector& Connector::operator=(Connector&& other)
     {
         Socket::operator=(std::move(other));
+        connectTimeout = other.connectTimeout;
+        timeSinceConnect = other.timeSinceConnect;
         connectCallback = std::move(other.connectCallback);
+        connectErrorCallback = std::move(other.connectErrorCallback);
 
-        other.connectCallback = nullptr;
+        other.connectTimeout = 10.0f;
+        other.timeSinceConnect = 0.0f;
 
         return *this;
+    }
+
+    void Connector::update(float delta)
+    {
+        Socket::update(delta);
+        
+        if (connecting)
+        {
+            timeSinceConnect += delta;
+
+            if (timeSinceConnect > connectTimeout)
+            {
+                connecting = false;
+
+                disconnect();
+
+                std::cerr << "Failed to connect to " << Network::ipToString(ipAddress) << ":" << port << ", connection timed out" << std::endl;
+
+                if (connectErrorCallback)
+                {
+                    connectErrorCallback();
+                }
+            }
+        }
     }
 
     bool Connector::connect(const std::string& address, uint16_t newPort)
@@ -168,6 +200,11 @@ namespace cppsocket
         }
 
         return true;
+    }
+
+    void Connector::setConnectTimeout(float timeout)
+    {
+        connectTimeout = timeout;
     }
 
     void Connector::setConnectCallback(const std::function<void()>& newConnectCallback)

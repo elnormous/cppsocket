@@ -78,8 +78,6 @@ namespace cppsocket
         other.blocking = true;
         other.ipAddress = 0;
         other.port = 0;
-        other.readCallback = nullptr;
-        other.closeCallback = nullptr;
     }
 
     Socket& Socket::operator=(Socket&& other)
@@ -99,8 +97,6 @@ namespace cppsocket
         other.blocking = true;
         other.ipAddress = 0;
         other.port = 0;
-        other.readCallback = nullptr;
-        other.closeCallback = nullptr;
 
         return *this;
     }

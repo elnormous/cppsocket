@@ -27,26 +27,23 @@ int main(int argc, const char* argv[])
     std::string address = argv[2];
 
     cppsocket::Network network;
-    cppsocket::Socket socket(network);
+    cppsocket::Acceptor server(network);
+    cppsocket::Connector client(network);
 
     if (type == "server")
     {
-        cppsocket::Acceptor server(network);
-
         std::istringstream buffer(address);
         uint16_t port;
         buffer >> port;
 
         server.setBlocking(false);
         server.startAccept(port);
-        socket = std::move(server);
     }
     else if (type == "client")
     {
-        cppsocket::Connector client(network);
         client.setBlocking(false);
+        client.setConnectTimeout(2.0f);
         client.connect(address);
-        socket = std::move(client);
     }
 
     const std::chrono::microseconds sleepTime(10000);

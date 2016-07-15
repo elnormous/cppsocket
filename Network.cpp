@@ -75,20 +75,22 @@ namespace cppsocket
 
         std::map<socket_t, std::reference_wrapper<Socket>> socketMap;
 
-        for (auto socket : sockets)
+        for (auto s : sockets)
         {
+            Socket& socket = s.get();
+
             pollfd pollFd;
-            pollFd.fd = socket.get().socketFd;
+            pollFd.fd = socket.socketFd;
             pollFd.events = POLLIN;
 
-            if (socket.get().isConnecting() || socket.get().hasOutData())
+            if (socket.isConnecting() || socket.hasOutData())
             {
                 pollFd.events |= POLLOUT;
             }
 
             pollFds.push_back(pollFd);
 
-            socketMap.insert(std::pair<socket_t, std::reference_wrapper<Socket>>(socket.get().socketFd, socket));
+            socketMap.insert(std::pair<socket_t, std::reference_wrapper<Socket>>(socket.socketFd, socket));
         }
 
 #ifdef _MSC_VER
@@ -110,7 +112,7 @@ namespace cppsocket
 
             if (iter != socketMap.end())
             {
-                Socket& socket = iter->second.get();
+                Socket& socket = iter->second;
 
                 if (pollFd.revents & POLLIN)
                 {
