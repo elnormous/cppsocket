@@ -12,7 +12,7 @@
 
 static void printUsage(const std::string& executable)
 {
-    std::cout << "Usage: " << executable << " [server|client] [port|address]";
+    std::cout << "Usage: " << executable << " [server|client] [port|address]" << std::endl;
 }
 
 int main(int argc, const char* argv[])
@@ -38,12 +38,21 @@ int main(int argc, const char* argv[])
 
         server.setBlocking(false);
         server.startAccept(port);
+
+        server.setAcceptCallback([](cppsocket::Socket& clientSocket) {
+            std::cout << "Client connected" << std::endl;
+            clientSocket.send({'t', 'e', 's', 't'});
+        });
     }
     else if (type == "client")
     {
         client.setBlocking(false);
         client.setConnectTimeout(2.0f);
         client.connect(address);
+
+        client.setReadCallback([](const std::vector<uint8_t>& data) {
+            std::cout << "Got data: " << data.data() << std::endl;
+        });
     }
 
     const std::chrono::microseconds sleepTime(10000);
