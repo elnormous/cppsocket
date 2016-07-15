@@ -96,6 +96,14 @@ namespace cppsocket
                 std::cerr << "Failed to create socket, error: " << error << std::endl;
                 return false;
             }
+
+            if (!blocking)
+            {
+                if (!setBlocking(false))
+                {
+                    return false;
+                }
+            }
         }
 
         ipAddress = address;

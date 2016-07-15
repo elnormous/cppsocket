@@ -36,12 +36,14 @@ int main(int argc, const char* argv[])
         std::istringstream buffer(address);
         uint16_t port;
 
+        server.setBlocking(false);
         server.startAccept(port);
         socket = std::move(server);
     }
     else if (type == "client")
     {
         cppsocket::Connector client(network);
+        client.setBlocking(false);
         client.connect(address);
         socket = std::move(client);
     }
