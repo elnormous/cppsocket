@@ -29,6 +29,7 @@ int main(int argc, const char* argv[])
     cppsocket::Network network;
     cppsocket::Acceptor server(network);
     cppsocket::Connector client(network);
+    cppsocket::Socket clientSocket(network);
 
     if (type == "server")
     {
@@ -39,9 +40,10 @@ int main(int argc, const char* argv[])
         server.setBlocking(false);
         server.startAccept(port);
 
-        server.setAcceptCallback([](cppsocket::Socket& clientSocket) {
+        server.setAcceptCallback([&clientSocket](cppsocket::Socket& c) {
             std::cout << "Client connected" << std::endl;
-            clientSocket.send({'t', 'e', 's', 't'});
+            c.send({'t', 'e', 's', 't'});
+            clientSocket = std::move(c);
         });
     }
     else if (type == "client")
