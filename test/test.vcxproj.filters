@@ -1,0 +1,42 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="cppsocket">
+      <UniqueIdentifier>{4a38d4eb-f6e2-47ed-90c1-202b4f412c8b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="test">
+      <UniqueIdentifier>{4fc5987b-5821-4436-81e9-10aa7da94d5c}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\Acceptor.cpp">
+      <Filter>cppsocket</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Connector.cpp">
+      <Filter>cppsocket</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Network.cpp">
+      <Filter>cppsocket</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Socket.cpp">
+      <Filter>cppsocket</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>test</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\Acceptor.h">
+      <Filter>cppsocket</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Connector.h">
+      <Filter>cppsocket</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Network.h">
+      <Filter>cppsocket</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Socket.h">
+      <Filter>cppsocket</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

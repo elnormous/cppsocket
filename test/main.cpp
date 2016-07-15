@@ -35,6 +35,7 @@ int main(int argc, const char* argv[])
 
         std::istringstream buffer(address);
         uint16_t port;
+        buffer >> port;
 
         server.setBlocking(false);
         server.startAccept(port);
