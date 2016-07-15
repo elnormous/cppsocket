@@ -79,13 +79,16 @@ namespace cppsocket
         {
             Socket& socket = s.get();
 
-            pollfd pollFd;
-            pollFd.fd = socket.socketFd;
-            pollFd.events = POLLIN | POLLOUT;
+            if (socket.socketFd != INVALID_SOCKET)
+            {
+                pollfd pollFd;
+                pollFd.fd = socket.socketFd;
+                pollFd.events = POLLIN | POLLOUT;
 
-            pollFds.push_back(pollFd);
+                pollFds.push_back(pollFd);
 
-            socketMap.insert(std::pair<socket_t, std::reference_wrapper<Socket>>(socket.socketFd, socket));
+                socketMap.insert(std::pair<socket_t, std::reference_wrapper<Socket>>(socket.socketFd, socket));
+            }
         }
 
 #ifdef _MSC_VER
