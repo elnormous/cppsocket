@@ -91,38 +91,41 @@ namespace cppsocket
             }
         }
 
+        if (!pollFds.empty())
+        {
 #ifdef _MSC_VER
-        if (WSAPoll(pollFds.data(), static_cast<ULONG>(pollFds.size()), 0) < 0)
+            if (WSAPoll(pollFds.data(), static_cast<ULONG>(pollFds.size()), 0) < 0)
 #else
-        if (poll(pollFds.data(), static_cast<nfds_t>(pollFds.size()), 0) < 0)
+            if (poll(pollFds.data(), static_cast<nfds_t>(pollFds.size()), 0) < 0)
 #endif
-        {
-            int error = getLastError();
-            std::cerr << "Poll failed, error: " << error << std::endl;
-            return false;
-        }
-
-        for (uint32_t i = 0; i < pollFds.size(); ++i)
-        {
-            pollfd pollFd = pollFds[i];
-
-            auto iter = socketMap.find(pollFd.fd);
-
-            if (iter != socketMap.end())
             {
-                Socket& socket = iter->second;
+                int error = getLastError();
+                std::cerr << "Poll failed, error: " << error << std::endl;
+                return false;
+            }
 
-                if (pollFd.revents & POLLIN)
+            for (uint32_t i = 0; i < pollFds.size(); ++i)
+            {
+                pollfd pollFd = pollFds[i];
+
+                auto iter = socketMap.find(pollFd.fd);
+
+                if (iter != socketMap.end())
                 {
-                    socket.read();
-                }
+                    Socket& socket = iter->second;
 
-                if (pollFd.revents & POLLOUT)
-                {
-                    socket.write();
-                }
+                    if (pollFd.revents & POLLIN)
+                    {
+                        socket.read();
+                    }
 
-                socket.update(delta);
+                    if (pollFd.revents & POLLOUT)
+                    {
+                        socket.write();
+                    }
+
+                    socket.update(delta);
+                }
             }
         }
 
