@@ -94,7 +94,7 @@ namespace cppsocket
     {
         ready = false;
 
-        if (socketFd >= 0)
+        if (socketFd != INVALID_SOCKET)
         {
 #ifdef _MSC_VER
             int result = closesocket(socketFd);
