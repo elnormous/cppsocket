@@ -31,9 +31,11 @@ namespace cppsocket
         Socket(std::move(other)),
         connectTimeout(other.connectTimeout),
         timeSinceConnect(other.timeSinceConnect),
+        connecting(other.connecting),
         connectCallback(std::move(other.connectCallback)),
         connectErrorCallback(std::move(other.connectErrorCallback))
     {
+        other.connecting = false;
         other.connectTimeout = 10.0f;
         other.timeSinceConnect = 0.0f;
     }
@@ -43,9 +45,11 @@ namespace cppsocket
         Socket::operator=(std::move(other));
         connectTimeout = other.connectTimeout;
         timeSinceConnect = other.timeSinceConnect;
+        connecting = other.connecting;
         connectCallback = std::move(other.connectCallback);
         connectErrorCallback = std::move(other.connectErrorCallback);
 
+        other.connecting = false;
         other.connectTimeout = 10.0f;
         other.timeSinceConnect = 0.0f;
 
@@ -233,6 +237,28 @@ namespace cppsocket
             {
                 connectCallback();
             }
+        }
+
+        return true;
+    }
+
+    bool Connector::disconnected()
+    {
+        if (connecting)
+        {
+            connecting = false;
+            ready = false;
+            
+            std::cerr << "Failed to connect to " << Network::ipToString(ipAddress) << ":" << port << std::endl;
+
+            if (connectErrorCallback)
+            {
+                connectErrorCallback();
+            }
+        }
+        else
+        {
+            Socket::disconnected();
         }
 
         return true;

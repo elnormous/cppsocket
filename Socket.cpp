@@ -62,7 +62,6 @@ namespace cppsocket
     Socket::Socket(Socket&& other):
         network(other.network),
         socketFd(other.socketFd),
-        connecting(other.connecting),
         ready(other.ready),
         blocking(other.blocking),
         ipAddress(other.ipAddress),
@@ -73,7 +72,6 @@ namespace cppsocket
         network.addSocket(*this);
 
         other.socketFd = INVALID_SOCKET;
-        other.connecting = false;
         other.ready = false;
         other.blocking = true;
         other.ipAddress = 0;
@@ -83,7 +81,6 @@ namespace cppsocket
     Socket& Socket::operator=(Socket&& other)
     {
         socketFd = other.socketFd;
-        connecting = other.connecting;
         ready = other.ready;
         blocking = other.blocking;
         ipAddress = other.ipAddress;
@@ -92,7 +89,6 @@ namespace cppsocket
         closeCallback = std::move(other.closeCallback);
 
         other.socketFd = INVALID_SOCKET;
-        other.connecting = false;
         other.ready = false;
         other.blocking = true;
         other.ipAddress = 0;
@@ -201,21 +197,13 @@ namespace cppsocket
         {
             int error = Network::getLastError();
 
-            if (connecting)
+            if (error == ECONNRESET)
             {
-                std::cerr << "Failed to connect to " << Network::ipToString(ipAddress) << ":" << port << ", error: " << error << std::endl;
-                connecting = false;
+                std::cerr << "Connection reset by peer" << std::endl;
             }
             else
             {
-                if (error == ECONNRESET)
-                {
-                    std::cerr << "Connection reset by peer" << std::endl;
-                }
-                else
-                {
-                    std::cerr << "Failed to read from socket, error: " << error << std::endl;
-                }
+                std::cerr << "Failed to read from socket, error: " << error << std::endl;
             }
 
             disconnected();
@@ -291,11 +279,10 @@ namespace cppsocket
 
     bool Socket::disconnected()
     {
-        if (ready || connecting)
+        if (ready)
         {
             std::cout << "Socket disconnected" << std::endl;
 
-            connecting = false;
             ready = false;
 
             if (closeCallback)

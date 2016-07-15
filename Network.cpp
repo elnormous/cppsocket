@@ -81,12 +81,7 @@ namespace cppsocket
 
             pollfd pollFd;
             pollFd.fd = socket.socketFd;
-            pollFd.events = POLLIN;
-
-            if (socket.isConnecting() || socket.hasOutData())
-            {
-                pollFd.events |= POLLOUT;
-            }
+            pollFd.events = POLLIN | POLLOUT;
 
             pollFds.push_back(pollFd);
 

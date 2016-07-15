@@ -24,6 +24,7 @@ namespace cppsocket
         bool connect(uint32_t address, uint16_t newPort);
         bool disconnect();
 
+        bool isConnecting() const { return connecting; }
         void setConnectTimeout(float timeout);
 
         void setConnectCallback(const std::function<void()>& newConnectCallback);
@@ -31,9 +32,11 @@ namespace cppsocket
 
     protected:
         virtual bool write() override;
+        virtual bool disconnected() override;
 
         float connectTimeout = 10.0f;
         float timeSinceConnect = 0.0f;
+        bool connecting = false;
 
         std::function<void()> connectCallback;
         std::function<void()> connectErrorCallback;

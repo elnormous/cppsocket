@@ -45,7 +45,6 @@ namespace cppsocket
         uint32_t getIPAddress() const { return ipAddress; }
         uint16_t getPort() const { return port; }
 
-        bool isConnecting() const { return connecting; }
         bool isBlocking() const { return blocking; }
         bool setBlocking(bool newBlocking);
 
@@ -62,7 +61,6 @@ namespace cppsocket
 
         socket_t socketFd = INVALID_SOCKET;
 
-        bool connecting = false;
         bool ready = false;
         bool blocking = true;
 
