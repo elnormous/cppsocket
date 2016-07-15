@@ -157,7 +157,11 @@ namespace cppsocket
         {
             int error = Network::getLastError();
 
+#ifdef _MSC_VER
+            if (error == EINPROGRESS || error == WSAEWOULDBLOCK)
+#else
             if (error == EINPROGRESS)
+#endif
             {
                 connecting = true;
             }
