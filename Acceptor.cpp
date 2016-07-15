@@ -48,21 +48,9 @@ namespace cppsocket
     {
         if (socketFd == INVALID_SOCKET)
         {
-            socketFd = socket(AF_INET, SOCK_STREAM, 0);
-
-            if (socketFd == INVALID_SOCKET)
+            if (!createSocketFd())
             {
-                int error = Network::getLastError();
-                std::cerr << "Failed to create socket, error: " << error << std::endl;
                 return false;
-            }
-
-            if (!blocking)
-            {
-                if (!setBlocking(false))
-                {
-                    return false;
-                }
             }
         }
 

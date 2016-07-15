@@ -57,6 +57,9 @@ namespace cppsocket
         virtual bool write();
         virtual bool disconnected();
 
+        bool createSocketFd();
+        bool setFdBlocking(bool block);
+
         Network& network;
 
         socket_t socketFd = INVALID_SOCKET;

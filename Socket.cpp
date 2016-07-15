@@ -23,17 +23,6 @@ namespace cppsocket
     Socket::Socket(Network& pNetwork, socket_t pSocketFd):
         network(pNetwork), socketFd(pSocketFd)
     {
-        if (socketFd == INVALID_SOCKET)
-        {
-            socketFd = socket(AF_INET, SOCK_STREAM, 0);
-
-            if (socketFd == INVALID_SOCKET)
-            {
-                int error = Network::getLastError();
-                std::cerr << "Failed to create socket, error: " << error << std::endl;
-            }
-        }
-
         network.addSocket(*this);
     }
 
@@ -159,8 +148,47 @@ namespace cppsocket
 
     bool Socket::setBlocking(bool newBlocking)
     {
+        blocking = newBlocking;
+
+        if (socketFd != INVALID_SOCKET)
+        {
+            return setFdBlocking(newBlocking);
+        }
+
+        return true;
+    }
+
+    bool Socket::createSocketFd()
+    {
+        socketFd = socket(AF_INET, SOCK_STREAM, 0);
+
+        if (socketFd == INVALID_SOCKET)
+        {
+            int error = Network::getLastError();
+            std::cerr << "Failed to create socket, error: " << error << std::endl;
+            return false;
+        }
+
+        if (!blocking)
+        {
+            if (!setFdBlocking(false))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    bool Socket::setFdBlocking(bool block)
+    {
+        if (socketFd == INVALID_SOCKET)
+        {
+            return false;
+        }
+
 #ifdef _MSC_VER
-        unsigned long mode = newBlocking ? 0 : 1;
+        unsigned long mode = block ? 0 : 1;
         if (ioctlsocket(socketFd, FIONBIO, &mode) != 0)
         {
             return false;
@@ -168,15 +196,13 @@ namespace cppsocket
 #else
         int flags = fcntl(socketFd, F_GETFL, 0);
         if (flags < 0) return false;
-        flags = newBlocking ? (flags&~O_NONBLOCK) : (flags|O_NONBLOCK);
+        flags = block ? (flags&~O_NONBLOCK) : (flags|O_NONBLOCK);
 
         if (fcntl(socketFd, F_SETFL, flags) != 0)
         {
             return false;
         }
 #endif
-
-        blocking = newBlocking;
 
         return true;
     }
