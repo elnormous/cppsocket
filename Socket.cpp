@@ -197,18 +197,23 @@ namespace cppsocket
         {
             int error = Network::getLastError();
 
-            if (error == ECONNRESET)
+            if (error == EAGAIN)
+            {
+                std::cerr << "Nothing to read from socket" << std::endl;
+                return true;
+            }
+            else if (error == ECONNRESET)
             {
                 std::cerr << "Connection reset by peer" << std::endl;
+                disconnected();
+                return false;
             }
             else
             {
                 std::cerr << "Failed to read from socket, error: " << error << std::endl;
+                disconnected();
+                return false;
             }
-
-            disconnected();
-
-            return false;
         }
         else if (size == 0)
         {
