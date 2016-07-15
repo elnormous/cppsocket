@@ -43,7 +43,7 @@ int main(int argc, const char* argv[])
         server.setAcceptCallback([&clientSocket](cppsocket::Socket& c) {
             std::cout << "Client connected" << std::endl;
             c.startRead();
-            c.send({'t', 'e', 's', 't'});
+            c.send({'t', 'e', 's', 't', '\0'});
             c.setCloseCallback([]() {
                 std::cout << "Client disconnected" << std::endl;
             });
