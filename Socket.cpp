@@ -196,7 +196,7 @@ namespace cppsocket
 #else
         int flags = fcntl(socketFd, F_GETFL, 0);
         if (flags < 0) return false;
-        flags = block ? (flags&~O_NONBLOCK) : (flags|O_NONBLOCK);
+        flags = block ? (flags & ~O_NONBLOCK) : (flags | O_NONBLOCK);
 
         if (fcntl(socketFd, F_SETFL, flags) != 0)
         {
@@ -227,7 +227,11 @@ namespace cppsocket
         {
             int error = Network::getLastError();
 
-            if (error == EAGAIN || error == EWOULDBLOCK)
+            if (error == EAGAIN ||
+#ifdef _MSC_VER
+                error == WSAEWOULDBLOCK ||
+#endif
+                error == EWOULDBLOCK)
             {
                 std::cerr << "Nothing to read from socket" << std::endl;
                 return true;
@@ -285,7 +289,11 @@ namespace cppsocket
             if (size < 0)
             {
                 int error = Network::getLastError();
-                if (error != EAGAIN && error != EWOULDBLOCK)
+                if (error != EAGAIN &&
+#ifdef _MSC_VER
+                    error != WSAEWOULDBLOCK &&
+#endif
+                    error != EWOULDBLOCK)
                 {
                     std::cerr << "Failed to send data, error: " << error << std::endl;
 
