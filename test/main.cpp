@@ -44,6 +44,9 @@ int main(int argc, const char* argv[])
             std::cout << "Client connected" << std::endl;
             c.startRead();
             c.send({'t', 'e', 's', 't'});
+            c.setCloseCallback([]() {
+                std::cout << "Client disconnected" << std::endl;
+            });
             clientSocket = std::move(c);
         });
     }
