@@ -201,7 +201,7 @@ namespace cppsocket
         {
             int error = Network::getLastError();
 
-            if (error == EAGAIN)
+            if (error == EAGAIN || error == EWOULDBLOCK)
             {
                 std::cerr << "Nothing to read from socket" << std::endl;
                 return true;
