@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <errno.h>
 #include <vector>
 #include <memory>
 #include <string>
