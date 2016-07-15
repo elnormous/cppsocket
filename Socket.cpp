@@ -67,7 +67,9 @@ namespace cppsocket
         ipAddress(other.ipAddress),
         port(other.port),
         readCallback(std::move(other.readCallback)),
-        closeCallback(std::move(other.closeCallback))
+        closeCallback(std::move(other.closeCallback)),
+        inData(std::move(other.inData)),
+        outData(std::move(other.outData))
     {
         network.addSocket(*this);
 
@@ -87,6 +89,8 @@ namespace cppsocket
         port = other.port;
         readCallback = std::move(other.readCallback);
         closeCallback = std::move(other.closeCallback);
+        inData = std::move(other.inData);
+        outData = std::move(other.outData);
 
         other.socketFd = INVALID_SOCKET;
         other.ready = false;
