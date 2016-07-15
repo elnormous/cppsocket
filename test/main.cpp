@@ -42,6 +42,7 @@ int main(int argc, const char* argv[])
 
         server.setAcceptCallback([&clientSocket](cppsocket::Socket& c) {
             std::cout << "Client connected" << std::endl;
+            c.startRead();
             c.send({'t', 'e', 's', 't'});
             clientSocket = std::move(c);
         });
