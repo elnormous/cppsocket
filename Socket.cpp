@@ -71,6 +71,8 @@ namespace cppsocket
 
     Socket& Socket::operator=(Socket&& other)
     {
+        close();
+
         socketFd = other.socketFd;
         ready = other.ready;
         blocking = other.blocking;
