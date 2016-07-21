@@ -6,6 +6,7 @@
 #include <string>
 #include <cstring>
 #ifdef _MSC_VER
+#define NOMINMAX
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #else

@@ -7,6 +7,7 @@
 #include <map>
 #include <chrono>
 #ifdef _MSC_VER
+#define NOMINMAX
 #include <winsock2.h>
 #else
 #include <sys/socket.h>

@@ -9,6 +9,7 @@
 #include <cstdint>
 
 #ifdef _MSC_VER
+#define NOMINMAX
 #include <winsock2.h>
 typedef SOCKET socket_t;
 #else
