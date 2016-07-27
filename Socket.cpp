@@ -305,7 +305,7 @@ namespace cppsocket
             }
             else if (size != static_cast<int>(outData.size()))
             {
-                std::cerr << "Failed to send all data" << std::endl;
+                std::cerr << "Failed to send all data, sent " << size << " out of " << outData.size() << " bytes" << std::endl;
             }
 
             if (size)
