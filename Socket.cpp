@@ -254,7 +254,7 @@ namespace cppsocket
         {
             disconnected();
 
-            return false;
+            return true;
         }
 
 #ifdef DEBUG
@@ -305,16 +305,20 @@ namespace cppsocket
             }
             else if (size != static_cast<int>(outData.size()))
             {
-                std::cerr << "Failed to send all data, sent " << size << " out of " << outData.size() << " bytes" << std::endl;
+#ifdef DEBUG
+                std::cout << "Socket did not send all data, sent " << size << " out of " << outData.size() << " bytes" << std::endl;
+#endif
             }
-
-            if (size)
+            else if (size)
             {
-                outData.erase(outData.begin(), outData.begin() + size);
-
 #ifdef DEBUG
                 std::cout << "Socket sent " << size << " bytes" << std::endl;
 #endif
+            }
+
+            if (size > 0)
+            {
+                outData.erase(outData.begin(), outData.begin() + size);
             }
         }
 
