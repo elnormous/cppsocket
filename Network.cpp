@@ -76,7 +76,7 @@ namespace cppsocket
 
         std::map<socket_t, std::reference_wrapper<Socket>> socketMap;
 
-        for (auto s : sockets)
+        for (const auto& s : sockets)
         {
             Socket& socket = s.get();
 
