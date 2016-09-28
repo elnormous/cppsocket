@@ -7,9 +7,11 @@
 #ifdef _MSC_VER
 #define NOMINMAX
 #include <winsock2.h>
+#include <ws2tcpip.h>
 #else
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <netdb.h>
 #include <unistd.h>
 #endif
 #include "Acceptor.h"
@@ -45,8 +47,46 @@ namespace cppsocket
         return *this;
     }
 
-    bool Acceptor::startAccept(uint16_t newPort)
+    bool Acceptor::startAccept(const std::string& address, uint16_t newPort)
     {
+        ready = false;
+
+        size_t i = address.find(':');
+        std::string addressStr;
+        std::string portStr;
+
+        if (i != std::string::npos)
+        {
+            addressStr = address.substr(0, i);
+            portStr = address.substr(i + 1);
+        }
+        else
+        {
+            addressStr = address;
+            portStr = std::to_string(newPort);
+        }
+
+        addrinfo* result;
+        if (getaddrinfo(addressStr.c_str(), portStr.empty() ? nullptr : portStr.c_str(), nullptr, &result) != 0)
+        {
+            int error = Network::getLastError();
+            std::cerr << "Failed to get address info, error: " << error << std::endl;
+            return false;
+        }
+
+        struct sockaddr_in* addr = reinterpret_cast<struct sockaddr_in*>(result->ai_addr);
+        uint32_t ip = addr->sin_addr.s_addr;
+        newPort = ntohs(addr->sin_port);
+
+        freeaddrinfo(result);
+
+        return startAccept(ip, newPort);
+    }
+
+    bool Acceptor::startAccept(uint32_t address, uint16_t newPort)
+    {
+        ready = false;
+
         if (socketFd == INVALID_SOCKET)
         {
             if (!createSocketFd())
@@ -70,7 +110,7 @@ namespace cppsocket
         memset(&serverAddress, 0, sizeof(serverAddress));
         serverAddress.sin_family = AF_INET;
         serverAddress.sin_port = htons(port);
-        serverAddress.sin_addr.s_addr = INADDR_ANY;
+        serverAddress.sin_addr.s_addr = address;
 
         if (bind(socketFd, reinterpret_cast<sockaddr*>(&serverAddress), sizeof(serverAddress)) < 0)
         {

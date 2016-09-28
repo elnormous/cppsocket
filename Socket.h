@@ -19,6 +19,8 @@ typedef int socket_t;
 
 namespace cppsocket
 {
+    const uint32_t ANY_ADDRESS = 0;
+
     class Network;
 
     class Socket

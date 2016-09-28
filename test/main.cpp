@@ -38,7 +38,7 @@ int main(int argc, const char* argv[])
         buffer >> port;
 
         server.setBlocking(false);
-        server.startAccept(port);
+        server.startAccept(cppsocket::ANY_ADDRESS, port);
 
         server.setAcceptCallback([&clientSocket](cppsocket::Socket& c) {
             std::cout << "Client connected" << std::endl;
