@@ -95,7 +95,7 @@ namespace cppsocket
             }
         }
 
-        ipAddress = 0;
+        ipAddress = address;
         port = newPort;
         int value = 1;
 
@@ -122,11 +122,11 @@ namespace cppsocket
         if (listen(socketFd, WAITING_QUEUE_SIZE) < 0)
         {
             int error = Network::getLastError();
-            std::cerr << "Failed to listen on port " << port << ", error: " << error << std::endl;
+            std::cerr << "Failed to listen on " << Network::ipToString(ipAddress) << ":" << port << ", error: " << error << std::endl;
             return false;
         }
 
-        std::cout << "Server listening on port " << port << std::endl;
+        std::cout << "Server listening on " << Network::ipToString(ipAddress) << ":" << port << std::endl;
         ready = true;
 
         return true;
