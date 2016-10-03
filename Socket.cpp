@@ -37,7 +37,7 @@ namespace cppsocket
             if (::close(socketFd) < 0)
 #endif
             {
-                int error = Network::getLastError();
+                int error = getLastError();
                 std::cerr << "Failed to close socket, error: " << error << std::endl;
             }
             else
@@ -106,7 +106,7 @@ namespace cppsocket
 
             if (result < 0)
             {
-                int error = Network::getLastError();
+                int error = getLastError();
                 std::cerr << "Failed to close socket, error: " << error << std::endl;
                 return false;
             }
@@ -165,7 +165,7 @@ namespace cppsocket
 
         if (socketFd == INVALID_SOCKET)
         {
-            int error = Network::getLastError();
+            int error = getLastError();
             std::cerr << "Failed to create socket, error: " << error << std::endl;
             return false;
         }
@@ -226,7 +226,7 @@ namespace cppsocket
 
         if (size < 0)
         {
-            int error = Network::getLastError();
+            int error = getLastError();
 
             if (error == EAGAIN ||
 #ifdef _MSC_VER
@@ -289,7 +289,7 @@ namespace cppsocket
 
             if (size < 0)
             {
-                int error = Network::getLastError();
+                int error = getLastError();
                 if (error != EAGAIN &&
 #ifdef _MSC_VER
                     error != WSAEWOULDBLOCK &&

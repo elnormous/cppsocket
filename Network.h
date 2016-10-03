@@ -16,16 +16,6 @@ namespace cppsocket
     {
         friend Socket;
     public:
-        static std::string ipToString(uint32_t ip);
-        static int getLastError()
-        {
-#ifdef _MSC_VER
-            return WSAGetLastError();
-#else
-            return errno;
-#endif
-        }
-
         Network();
 
         Network(const Network&) = delete;

@@ -69,7 +69,7 @@ namespace cppsocket
         addrinfo* result;
         if (getaddrinfo(addressStr.c_str(), portStr.empty() ? nullptr : portStr.c_str(), nullptr, &result) != 0)
         {
-            int error = Network::getLastError();
+            int error = getLastError();
             std::cerr << "Failed to get address info, error: " << error << std::endl;
             return false;
         }
@@ -101,7 +101,7 @@ namespace cppsocket
 
         if (setsockopt(socketFd, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char*>(&value), sizeof(value)) < 0)
         {
-            int error = Network::getLastError();
+            int error = getLastError();
             std::cerr << "setsockopt(SO_REUSEADDR) failed, error: " << error << std::endl;
             return false;
         }
@@ -114,19 +114,19 @@ namespace cppsocket
 
         if (bind(socketFd, reinterpret_cast<sockaddr*>(&serverAddress), sizeof(serverAddress)) < 0)
         {
-            int error = Network::getLastError();
+            int error = getLastError();
             std::cerr << "Failed to bind server socket, error: " << error << std::endl;
             return false;
         }
 
         if (listen(socketFd, WAITING_QUEUE_SIZE) < 0)
         {
-            int error = Network::getLastError();
-            std::cerr << "Failed to listen on " << Network::ipToString(ipAddress) << ":" << port << ", error: " << error << std::endl;
+            int error = getLastError();
+            std::cerr << "Failed to listen on " << ipToString(ipAddress) << ":" << port << ", error: " << error << std::endl;
             return false;
         }
 
-        std::cout << "Server listening on " << Network::ipToString(ipAddress) << ":" << port << std::endl;
+        std::cout << "Server listening on " << ipToString(ipAddress) << ":" << port << std::endl;
         ready = true;
 
         return true;
@@ -155,13 +155,13 @@ namespace cppsocket
 
         if (clientFd == INVALID_SOCKET)
         {
-            int error = Network::getLastError();
+            int error = getLastError();
             std::cerr << "Failed to accept client, error: " << error << std::endl;
             return false;
         }
         else
         {
-            std::cout << "Client connected from " << Network::ipToString(address.sin_addr.s_addr) << std::endl;
+            std::cout << "Client connected from " << ipToString(address.sin_addr.s_addr) << std::endl;
 
             Socket socket(network, clientFd);
 
