@@ -29,13 +29,6 @@ namespace cppsocket
                std::to_string(static_cast<uint32_t>(ptr[3]));
     }
 
-    uint64_t Network::getTime()
-    {
-        auto t = std::chrono::steady_clock::now();
-        auto micros = std::chrono::duration_cast<std::chrono::microseconds>(t.time_since_epoch());
-        return static_cast<uint64_t>(micros.count());
-    }
-
     Network::Network()
     {
 #ifdef _MSC_VER
@@ -62,13 +55,15 @@ namespace cppsocket
         }
 #endif
 
-        previousTime = getTime();
+        previousTime = std::chrono::steady_clock::now();
     }
 
     bool Network::update()
     {
-        uint64_t currentTime = getTime();
-        float delta = static_cast<float>((currentTime - previousTime)) / 1000000.0f;
+        auto currentTime = std::chrono::steady_clock::now();
+        auto diff = std::chrono::duration_cast<std::chrono::microseconds>(currentTime - previousTime);
+
+        float delta = diff.count() / 1000000000.0f;
         previousTime = currentTime;
 
         std::vector<pollfd> pollFds;

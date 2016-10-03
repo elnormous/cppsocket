@@ -17,7 +17,6 @@ namespace cppsocket
         friend Socket;
     public:
         static std::string ipToString(uint32_t ip);
-        static uint64_t getTime();
         static int getLastError()
         {
 #ifdef _MSC_VER
@@ -42,6 +41,7 @@ namespace cppsocket
         void removeSocket(Socket& socket);
 
         std::vector<std::reference_wrapper<Socket>> sockets;
-        uint64_t previousTime;
+
+        std::chrono::steady_clock::time_point previousTime;
     };
 }
