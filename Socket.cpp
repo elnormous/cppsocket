@@ -2,7 +2,6 @@
 //  cppsocket
 //
 
-#include <iostream>
 #include <cstring>
 #ifdef _MSC_VER
 #include <ws2tcpip.h>
@@ -12,6 +11,7 @@
 #include <unistd.h>
 #endif
 #include <fcntl.h>
+#include "Log.h"
 #include "Socket.h"
 #include "Network.h"
 
@@ -38,11 +38,11 @@ namespace cppsocket
 #endif
             {
                 int error = getLastError();
-                std::cerr << "Failed to close socket, error: " << error << std::endl;
+                Log(Log::Level::ERROR) << "Failed to close socket, error: " << error;
             }
             else
             {
-                std::cout << "Socket closed" << std::endl;
+                Log(Log::Level::INFO) << "Socket closed";
             }
         }
     }
@@ -107,12 +107,12 @@ namespace cppsocket
             if (result < 0)
             {
                 int error = getLastError();
-                std::cerr << "Failed to close socket, error: " << error << std::endl;
+                Log(Log::Level::ERROR) << "Failed to close socket, error: " << error;
                 return false;
             }
             else
             {
-                std::cout << "Socket closed" << std::endl;
+                Log(Log::Level::INFO) << "Socket closed";
             }
 
         }
@@ -128,7 +128,7 @@ namespace cppsocket
     {
         if (socketFd == INVALID_SOCKET)
         {
-            std::cerr << "Can not start reading, invalid socket" << std::endl;
+            Log(Log::Level::ERROR) << "Can not start reading, invalid socket";
             return false;
         }
 
@@ -166,7 +166,7 @@ namespace cppsocket
         if (socketFd == INVALID_SOCKET)
         {
             int error = getLastError();
-            std::cerr << "Failed to create socket, error: " << error << std::endl;
+            Log(Log::Level::ERROR) << "Failed to create socket, error: " << error;
             return false;
         }
 
@@ -234,18 +234,18 @@ namespace cppsocket
 #endif
                 error == EWOULDBLOCK)
             {
-                std::cerr << "Nothing to read from socket" << std::endl;
+                Log(Log::Level::WARNING) << "Nothing to read from socket";
                 return true;
             }
             else if (error == ECONNRESET)
             {
-                std::cerr << "Connection reset by peer" << std::endl;
+                Log(Log::Level::INFO) << "Connection reset by peer";
                 disconnected();
                 return false;
             }
             else
             {
-                std::cerr << "Failed to read from socket, error: " << error << std::endl;
+                Log(Log::Level::ERROR) << "Failed to read from socket, error: " << error;
                 disconnected();
                 return false;
             }
@@ -257,9 +257,7 @@ namespace cppsocket
             return true;
         }
 
-#ifdef DEBUG
-        std::cout << "Socket received " << size << " bytes" << std::endl;
-#endif
+        Log(Log::Level::VERBOSE) << "Socket received " << size << " bytes";
 
         inData.insert(inData.end(), TEMP_BUFFER, TEMP_BUFFER + size);
 
@@ -296,7 +294,7 @@ namespace cppsocket
 #endif
                     error != EWOULDBLOCK)
                 {
-                    std::cerr << "Failed to send data, error: " << error << std::endl;
+                    Log(Log::Level::ERROR) << "Failed to send data, error: " << error;
 
                     outData.clear();
 
@@ -305,15 +303,11 @@ namespace cppsocket
             }
             else if (size != static_cast<int>(outData.size()))
             {
-#ifdef DEBUG
-                std::cout << "Socket did not send all data, sent " << size << " out of " << outData.size() << " bytes" << std::endl;
-#endif
+                Log(Log::Level::VERBOSE) << "Socket did not send all data, sent " << size << " out of " << outData.size() << " bytes";
             }
             else if (size)
             {
-#ifdef DEBUG
-                std::cout << "Socket sent " << size << " bytes" << std::endl;
-#endif
+                Log(Log::Level::VERBOSE) << "Socket sent " << size << " bytes";
             }
 
             if (size > 0)
@@ -329,7 +323,7 @@ namespace cppsocket
     {
         if (ready)
         {
-            std::cout << "Socket disconnected" << std::endl;
+            Log(Log::Level::INFO) << "Socket disconnected";
 
             ready = false;
 

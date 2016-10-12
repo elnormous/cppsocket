@@ -3,7 +3,6 @@
 //
 
 #include <algorithm>
-#include <iostream>
 #include <map>
 #include <chrono>
 #ifdef _MSC_VER
@@ -14,6 +13,7 @@
 #include <netinet/in.h>
 #include <poll.h>
 #endif
+#include "Log.h"
 #include "Network.h"
 #include "Socket.h"
 
@@ -30,13 +30,13 @@ namespace cppsocket
             int error = WSAStartup(sockVersion, &wsaData);
             if (error != 0)
             {
-                std::cerr << "WSAStartup failed, error: " << error << std::endl;
+                Log(Log::Level::ERROR) << "WSAStartup failed, error: " << error;
                 return;
             }
 
             if (LOBYTE(wsaData.wVersion) != 2 || HIBYTE(wsaData.wVersion) != 2)
             {
-                std::cerr << "Incorrect Winsock version" << std::endl;
+                Log(Log::Level::ERROR) << "Incorrect Winsock version";
                 WSACleanup();
                 return;
             }
@@ -86,7 +86,7 @@ namespace cppsocket
 #endif
             {
                 int error = getLastError();
-                std::cerr << "Poll failed, error: " << error << std::endl;
+                Log(Log::Level::ERROR) << "Poll failed, error: " << error;
                 return false;
             }
 

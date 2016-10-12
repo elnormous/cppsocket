@@ -2,7 +2,6 @@
 //  cppsocket
 //
 
-#include <iostream>
 #include <string>
 #include <cstring>
 #ifdef _MSC_VER
@@ -14,6 +13,7 @@
 #include <netdb.h>
 #include <unistd.h>
 #endif
+#include "Log.h"
 #include "Connector.h"
 #include "Network.h"
 
@@ -71,7 +71,7 @@ namespace cppsocket
 
                 close();
 
-                std::cerr << "Failed to connect to " << ipToString(ipAddress) << ":" << port << ", connection timed out" << std::endl;
+                Log(Log::Level::WARNING) << "Failed to connect to " << ipToString(ipAddress) << ":" << port << ", connection timed out";
 
                 if (connectErrorCallback)
                 {
@@ -105,7 +105,7 @@ namespace cppsocket
         if (getaddrinfo(addressStr.c_str(), portStr.empty() ? nullptr : portStr.c_str(), nullptr, &result) != 0)
         {
             int error = getLastError();
-            std::cerr << "Failed to get address info, error: " << error << std::endl;
+            Log(Log::Level::ERROR) << "Failed to get address info, error: " << error;
             return false;
         }
 
@@ -131,7 +131,7 @@ namespace cppsocket
         ipAddress = address;
         port = newPort;
 
-        std::cout << "Connecting to " << ipToString(ipAddress) << ":" << static_cast<int>(port) << std::endl;
+        Log(Log::Level::INFO) << "Connecting to " << ipToString(ipAddress) << ":" << static_cast<int>(port);
 
         sockaddr_in addr;
         memset(&addr, 0, sizeof(addr));
@@ -153,7 +153,7 @@ namespace cppsocket
             }
             else
             {
-                std::cerr << "Failed to connect to " << ipToString(ipAddress) << ":" << port << ", error: " << error << std::endl;
+                Log(Log::Level::WARNING) << "Failed to connect to " << ipToString(ipAddress) << ":" << port << ", error: " << error;
                 if (connectErrorCallback)
                 {
                     connectErrorCallback();
@@ -165,7 +165,7 @@ namespace cppsocket
         {
             // connected
             ready = true;
-            std::cout << "Socket connected to " << ipToString(ipAddress) << ":" << port << std::endl;
+            Log(Log::Level::INFO) << "Socket connected to " << ipToString(ipAddress) << ":" << port;
             if (connectCallback)
             {
                 connectCallback();
@@ -201,7 +201,7 @@ namespace cppsocket
         {
             connecting = false;
             ready = true;
-            std::cout << "Socket connected to " << ipToString(ipAddress) << ":" << port << std::endl;
+            Log(Log::Level::INFO) << "Socket connected to " << ipToString(ipAddress) << ":" << port;
             if (connectCallback)
             {
                 connectCallback();
@@ -218,7 +218,7 @@ namespace cppsocket
             connecting = false;
             ready = false;
             
-            std::cerr << "Failed to connect to " << ipToString(ipAddress) << ":" << port << std::endl;
+            Log(Log::Level::WARNING) << "Failed to connect to " << ipToString(ipAddress) << ":" << port;
 
             if (connectErrorCallback)
             {
