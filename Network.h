@@ -8,6 +8,7 @@
 #include <vector>
 #include <memory>
 #include <string>
+#include <chrono>
 #include "Socket.h"
 
 namespace cppsocket

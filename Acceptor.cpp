@@ -70,7 +70,7 @@ namespace cppsocket
         if (getaddrinfo(addressStr.c_str(), portStr.empty() ? nullptr : portStr.c_str(), nullptr, &result) != 0)
         {
             int error = getLastError();
-            Log(Log::Level::ERROR) << "Failed to get address info, error: " << error;
+            Log(Log::Level::ERR) << "Failed to get address info, error: " << error;
             return false;
         }
 
@@ -102,7 +102,7 @@ namespace cppsocket
         if (setsockopt(socketFd, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char*>(&value), sizeof(value)) < 0)
         {
             int error = getLastError();
-            Log(Log::Level::ERROR) << "setsockopt(SO_REUSEADDR) failed, error: " << error;
+            Log(Log::Level::ERR) << "setsockopt(SO_REUSEADDR) failed, error: " << error;
             return false;
         }
 
@@ -115,14 +115,14 @@ namespace cppsocket
         if (bind(socketFd, reinterpret_cast<sockaddr*>(&serverAddress), sizeof(serverAddress)) < 0)
         {
             int error = getLastError();
-            Log(Log::Level::ERROR) << "Failed to bind server socket, error: " << error;
+            Log(Log::Level::ERR) << "Failed to bind server socket, error: " << error;
             return false;
         }
 
         if (listen(socketFd, WAITING_QUEUE_SIZE) < 0)
         {
             int error = getLastError();
-            Log(Log::Level::ERROR) << "Failed to listen on " << ipToString(ipAddress) << ":" << port << ", error: " << error;
+            Log(Log::Level::ERR) << "Failed to listen on " << ipToString(ipAddress) << ":" << port << ", error: " << error;
             return false;
         }
 
@@ -156,7 +156,7 @@ namespace cppsocket
         if (clientFd == INVALID_SOCKET)
         {
             int error = getLastError();
-            Log(Log::Level::ERROR) << "Failed to accept client, error: " << error;
+            Log(Log::Level::ERR) << "Failed to accept client, error: " << error;
             return false;
         }
         else

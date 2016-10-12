@@ -71,7 +71,7 @@ namespace cppsocket
 
                 close();
 
-                Log(Log::Level::WARNING) << "Failed to connect to " << ipToString(ipAddress) << ":" << port << ", connection timed out";
+                Log(Log::Level::WARN) << "Failed to connect to " << ipToString(ipAddress) << ":" << port << ", connection timed out";
 
                 if (connectErrorCallback)
                 {
@@ -105,7 +105,7 @@ namespace cppsocket
         if (getaddrinfo(addressStr.c_str(), portStr.empty() ? nullptr : portStr.c_str(), nullptr, &result) != 0)
         {
             int error = getLastError();
-            Log(Log::Level::ERROR) << "Failed to get address info, error: " << error;
+            Log(Log::Level::ERR) << "Failed to get address info, error: " << error;
             return false;
         }
 
@@ -153,7 +153,7 @@ namespace cppsocket
             }
             else
             {
-                Log(Log::Level::WARNING) << "Failed to connect to " << ipToString(ipAddress) << ":" << port << ", error: " << error;
+                Log(Log::Level::WARN) << "Failed to connect to " << ipToString(ipAddress) << ":" << port << ", error: " << error;
                 if (connectErrorCallback)
                 {
                     connectErrorCallback();
@@ -218,7 +218,7 @@ namespace cppsocket
             connecting = false;
             ready = false;
             
-            Log(Log::Level::WARNING) << "Failed to connect to " << ipToString(ipAddress) << ":" << port;
+            Log(Log::Level::WARN) << "Failed to connect to " << ipToString(ipAddress) << ":" << port;
 
             if (connectErrorCallback)
             {

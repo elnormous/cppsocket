@@ -30,13 +30,13 @@ namespace cppsocket
             int error = WSAStartup(sockVersion, &wsaData);
             if (error != 0)
             {
-                Log(Log::Level::ERROR) << "WSAStartup failed, error: " << error;
+                Log(Log::Level::ERR) << "WSAStartup failed, error: " << error;
                 return;
             }
 
             if (LOBYTE(wsaData.wVersion) != 2 || HIBYTE(wsaData.wVersion) != 2)
             {
-                Log(Log::Level::ERROR) << "Incorrect Winsock version";
+                Log(Log::Level::ERR) << "Incorrect Winsock version";
                 WSACleanup();
                 return;
             }
@@ -86,7 +86,7 @@ namespace cppsocket
 #endif
             {
                 int error = getLastError();
-                Log(Log::Level::ERROR) << "Poll failed, error: " << error;
+                Log(Log::Level::ERR) << "Poll failed, error: " << error;
                 return false;
             }
 

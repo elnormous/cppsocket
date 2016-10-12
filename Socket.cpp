@@ -38,7 +38,7 @@ namespace cppsocket
 #endif
             {
                 int error = getLastError();
-                Log(Log::Level::ERROR) << "Failed to close socket, error: " << error;
+                Log(Log::Level::ERR) << "Failed to close socket, error: " << error;
             }
             else
             {
@@ -107,7 +107,7 @@ namespace cppsocket
             if (result < 0)
             {
                 int error = getLastError();
-                Log(Log::Level::ERROR) << "Failed to close socket, error: " << error;
+                Log(Log::Level::ERR) << "Failed to close socket, error: " << error;
                 return false;
             }
             else
@@ -128,7 +128,7 @@ namespace cppsocket
     {
         if (socketFd == INVALID_SOCKET)
         {
-            Log(Log::Level::ERROR) << "Can not start reading, invalid socket";
+            Log(Log::Level::ERR) << "Can not start reading, invalid socket";
             return false;
         }
 
@@ -166,7 +166,7 @@ namespace cppsocket
         if (socketFd == INVALID_SOCKET)
         {
             int error = getLastError();
-            Log(Log::Level::ERROR) << "Failed to create socket, error: " << error;
+            Log(Log::Level::ERR) << "Failed to create socket, error: " << error;
             return false;
         }
 
@@ -234,7 +234,7 @@ namespace cppsocket
 #endif
                 error == EWOULDBLOCK)
             {
-                Log(Log::Level::WARNING) << "Nothing to read from socket";
+                Log(Log::Level::WARN) << "Nothing to read from socket";
                 return true;
             }
             else if (error == ECONNRESET)
@@ -245,7 +245,7 @@ namespace cppsocket
             }
             else
             {
-                Log(Log::Level::ERROR) << "Failed to read from socket, error: " << error;
+                Log(Log::Level::ERR) << "Failed to read from socket, error: " << error;
                 disconnected();
                 return false;
             }
@@ -257,7 +257,7 @@ namespace cppsocket
             return true;
         }
 
-        Log(Log::Level::VERBOSE) << "Socket received " << size << " bytes";
+        Log(Log::Level::DEBUG) << "Socket received " << size << " bytes";
 
         inData.insert(inData.end(), TEMP_BUFFER, TEMP_BUFFER + size);
 
@@ -294,7 +294,7 @@ namespace cppsocket
 #endif
                     error != EWOULDBLOCK)
                 {
-                    Log(Log::Level::ERROR) << "Failed to send data, error: " << error;
+                    Log(Log::Level::ERR) << "Failed to send data, error: " << error;
 
                     outData.clear();
 
@@ -303,11 +303,11 @@ namespace cppsocket
             }
             else if (size != static_cast<int>(outData.size()))
             {
-                Log(Log::Level::VERBOSE) << "Socket did not send all data, sent " << size << " out of " << outData.size() << " bytes";
+                Log(Log::Level::DEBUG) << "Socket did not send all data, sent " << size << " out of " << outData.size() << " bytes";
             }
             else if (size)
             {
-                Log(Log::Level::VERBOSE) << "Socket sent " << size << " bytes";
+                Log(Log::Level::DEBUG) << "Socket sent " << size << " bytes";
             }
 
             if (size > 0)
