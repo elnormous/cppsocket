@@ -69,6 +69,7 @@ namespace cppsocket
                 case WARN: priority = LOG_WARNING; break;
                 case INFO: priority = LOG_INFO; break;
                 case DEBUG: priority = LOG_DEBUG; break;
+                default: break;
             }
             syslog(prio, "%s", s.str().c_str());
     #endif
