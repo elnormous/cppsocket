@@ -12,7 +12,7 @@
 #include <strsafe.h>
 #else
     #if defined(LOG_SYSLOG)
-    #include <syslog.h>
+    #include <sys/syslog.h>
     #endif
 #endif
 
