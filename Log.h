@@ -27,7 +27,7 @@ namespace cppsocket
             ERR,
             WARN,
             INFO,
-            DEBUG
+            ALL
         };
 
         static Level threshold;

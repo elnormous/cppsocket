@@ -257,7 +257,7 @@ namespace cppsocket
             return true;
         }
 
-        Log(Log::Level::DEBUG) << "Socket received " << size << " bytes";
+        Log(Log::Level::ALL) << "Socket received " << size << " bytes";
 
         inData.insert(inData.end(), TEMP_BUFFER, TEMP_BUFFER + size);
 
@@ -303,11 +303,11 @@ namespace cppsocket
             }
             else if (size != static_cast<int>(outData.size()))
             {
-                Log(Log::Level::DEBUG) << "Socket did not send all data, sent " << size << " out of " << outData.size() << " bytes";
+                Log(Log::Level::ALL) << "Socket did not send all data, sent " << size << " out of " << outData.size() << " bytes";
             }
             else if (size)
             {
-                Log(Log::Level::DEBUG) << "Socket sent " << size << " bytes";
+                Log(Log::Level::ALL) << "Socket sent " << size << " bytes";
             }
 
             if (size > 0)
