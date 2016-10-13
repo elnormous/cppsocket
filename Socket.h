@@ -7,6 +7,7 @@
 #include <vector>
 #include <functional>
 #include <cstdint>
+#include <string>
 
 #ifdef _MSC_VER
 #define NOMINMAX
