@@ -58,8 +58,8 @@ namespace cppsocket
 #ifdef _MSC_VER
             wchar_t szBuffer[MAX_PATH];
             MultiByteToWideChar(CP_UTF8, 0, s.str().c_str(), -1, szBuffer, MAX_PATH);
-            StringCchCat(szBuffer, sizeof(szBuffer), L"\n");
-            OutputDebugString(szBuffer);
+            StringCchCatW(szBuffer, sizeof(szBuffer), L"\n");
+            OutputDebugStringW(szBuffer);
 #else
     #if defined(LOG_SYSLOG)
             int priority = 0;
