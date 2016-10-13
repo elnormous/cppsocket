@@ -48,13 +48,13 @@ namespace cppsocket
         int priority = 0;
         switch (level)
         {
-            case ERR: priority = LOG_ERR; break;
-            case WARN: priority = LOG_WARNING; break;
-            case INFO: priority = LOG_INFO; break;
-            case DEBUG: priority = LOG_DEBUG; break;
+            case Level::ERR: priority = LOG_ERR; break;
+            case Level::WARN: priority = LOG_WARNING; break;
+            case Level::INFO: priority = LOG_INFO; break;
+            case Level::ALL: priority = LOG_DEBUG; break;
             default: break;
         }
-        syslog(prio, "%s", s.str().c_str());
+        syslog(priority, "%s", s.str().c_str());
 #endif
 #endif
     }
