@@ -325,7 +325,7 @@ namespace cppsocket
         {
             Log(Log::Level::INFO) << "Socket disconnected";
 
-            ready = false;
+            close();
 
             if (closeCallback)
             {
