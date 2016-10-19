@@ -61,8 +61,8 @@ namespace cppsocket
         virtual void update(float delta);
 
         bool startRead();
-        void setReadCallback(const std::function<void(const std::vector<uint8_t>&)>& newReadCallback);
-        void setCloseCallback(const std::function<void()>& newCloseCallback);
+        void setReadCallback(const std::function<void(Socket&, const std::vector<uint8_t>&)>& newReadCallback);
+        void setCloseCallback(const std::function<void(Socket&)>& newCloseCallback);
 
         bool send(std::vector<uint8_t> buffer);
 
@@ -94,8 +94,8 @@ namespace cppsocket
         uint32_t ipAddress = 0;
         uint16_t port = 0;
 
-        std::function<void(const std::vector<uint8_t>&)> readCallback;
-        std::function<void()> closeCallback;
+        std::function<void(Socket&, const std::vector<uint8_t>&)> readCallback;
+        std::function<void(Socket&)> closeCallback;
 
         std::vector<uint8_t> inData;
         std::vector<uint8_t> outData;

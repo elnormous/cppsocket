@@ -44,8 +44,8 @@ int main(int argc, const char* argv[])
             std::cout << "Client connected" << std::endl;
             c.startRead();
             c.send({'t', 'e', 's', 't', '\0'});
-            c.setCloseCallback([]() {
-                std::cout << "Client disconnected" << std::endl;
+            c.setCloseCallback([](cppsocket::Socket& socket) {
+                std::cout << "Client at " << cppsocket::ipToString(socket.getIPAddress()) << " disconnected" << std::endl;
             });
             clientSocket = std::move(c);
         });
@@ -56,8 +56,8 @@ int main(int argc, const char* argv[])
         client.setConnectTimeout(2.0f);
         client.connect(address);
 
-        client.setReadCallback([](const std::vector<uint8_t>& data) {
-            std::cout << "Got data: " << data.data() << std::endl;
+        client.setReadCallback([](cppsocket::Socket& socket, const std::vector<uint8_t>& data) {
+            std::cout << "Got data: " << data.data() << " from " << cppsocket::ipToString(socket.getIPAddress()) << std::endl;
         });
     }
 

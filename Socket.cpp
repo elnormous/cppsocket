@@ -137,12 +137,12 @@ namespace cppsocket
         return true;
     }
 
-    void Socket::setReadCallback(const std::function<void(const std::vector<uint8_t>&)>& newReadCallback)
+    void Socket::setReadCallback(const std::function<void(Socket&, const std::vector<uint8_t>&)>& newReadCallback)
     {
         readCallback = newReadCallback;
     }
 
-    void Socket::setCloseCallback(const std::function<void()>& newCloseCallback)
+    void Socket::setCloseCallback(const std::function<void(Socket&)>& newCloseCallback)
     {
         closeCallback = newCloseCallback;
     }
@@ -265,7 +265,7 @@ namespace cppsocket
         {
             if (readCallback)
             {
-                readCallback(inData);
+                readCallback(*this, inData);
             }
 
             inData.clear();
@@ -329,7 +329,7 @@ namespace cppsocket
 
             if (closeCallback)
             {
-                closeCallback();
+                closeCallback(*this);
             }
         }
 
