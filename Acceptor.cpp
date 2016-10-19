@@ -156,8 +156,20 @@ namespace cppsocket
         if (clientFd == INVALID_SOCKET)
         {
             int error = getLastError();
-            Log(Log::Level::ERR) << "Failed to accept client, error: " << error;
-            return false;
+
+            if (error == EAGAIN ||
+#ifdef _MSC_VER
+                error == WSAEWOULDBLOCK ||
+#endif
+                error == EWOULDBLOCK)
+            {
+                Log(Log::Level::ERR) << "No sockets to accept";
+            }
+            else
+            {
+                Log(Log::Level::ERR) << "Failed to accept client, error: " << error;
+                return false;
+            }
         }
         else
         {
