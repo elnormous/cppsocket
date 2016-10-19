@@ -14,6 +14,7 @@
 #include <winsock2.h>
 typedef SOCKET socket_t;
 #else
+#include <errno.h>
 typedef int socket_t;
 #define INVALID_SOCKET -1
 #endif
