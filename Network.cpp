@@ -58,8 +58,6 @@ namespace cppsocket
         std::vector<pollfd> pollFds;
         pollFds.reserve(sockets.size());
 
-        socketMap.clear();
-
         for (auto socket : sockets)
         {
             if (socket->socketFd != INVALID_SOCKET)
@@ -69,8 +67,6 @@ namespace cppsocket
                 pollFd.events = POLLIN | POLLOUT;
 
                 pollFds.push_back(pollFd);
-
-                socketMap.insert(std::pair<socket_t, Socket*>(socket->socketFd, socket));
             }
         }
 
@@ -91,11 +87,13 @@ namespace cppsocket
             {
                 pollfd pollFd = pollFds[i];
 
-                auto iter = socketMap.find(pollFd.fd);
+                auto iter = std::find_if(sockets.begin(), sockets.end(), [&pollFd](Socket* socket) {
+                    return socket->socketFd == pollFd.fd;
+                });
 
-                if (iter != socketMap.end())
+                if (iter != sockets.end())
                 {
-                    Socket* socket = iter->second;
+                    Socket* socket = *iter;
 
                     if (pollFd.revents & POLLIN)
                     {
@@ -127,18 +125,6 @@ namespace cppsocket
         if (vectorIterator != sockets.end())
         {
             sockets.erase(vectorIterator);
-        }
-
-        for (auto mapIterator = socketMap.begin(); mapIterator != socketMap.end();)
-        {
-            if (mapIterator->second == &socket)
-            {
-                mapIterator = socketMap.erase(mapIterator);
-            }
-            else
-            {
-                ++mapIterator;
-            }
         }
     }
 }

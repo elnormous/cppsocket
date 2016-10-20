@@ -44,8 +44,22 @@ int main(int argc, const char* argv[])
             std::cout << "Client connected" << std::endl;
             c.startRead();
             c.send({'t', 'e', 's', 't', '\0'});
-            c.setCloseCallback([](cppsocket::Socket& socket) {
+            c.setCloseCallback([&clientSockets](cppsocket::Socket& socket) {
                 std::cout << "Client at " << cppsocket::ipToString(socket.getIPAddress()) << " disconnected" << std::endl;
+
+                for (auto i = clientSockets.begin(); i != clientSockets.end();)
+                {
+                    if (&(*i) == &socket)
+                    {
+                        clientSockets.erase(i);
+                        break;
+                    }
+                    else
+                    {
+                        ++i;
+                    }
+                }
+
             });
             clientSockets.push_back(std::move(c));
         });

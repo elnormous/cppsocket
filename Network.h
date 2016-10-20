@@ -33,7 +33,6 @@ namespace cppsocket
         void removeSocket(Socket& socket);
 
         std::vector<Socket*> sockets;
-        std::map<socket_t, Socket*> socketMap;
 
         std::chrono::steady_clock::time_point previousTime;
     };
