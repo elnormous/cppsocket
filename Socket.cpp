@@ -31,6 +31,44 @@ namespace cppsocket
 
         if (socketFd != INVALID_SOCKET)
         {
+            // send remainig data
+            while (ready && !outData.empty())
+            {
+#ifdef _MSC_VER
+                int dataSize = static_cast<int>(outData.size());
+#else
+                size_t dataSize = outData.size();
+#endif
+                int size = static_cast<int>(::send(socketFd, reinterpret_cast<const char*>(outData.data()), dataSize, 0));
+
+                if (size < 0)
+                {
+                    int error = getLastError();
+                    if (error != EAGAIN &&
+#ifdef _MSC_VER
+                        error != WSAEWOULDBLOCK &&
+#endif
+                        error != EWOULDBLOCK)
+                    {
+                        Log(Log::Level::ERR) << "Failed to send data, error: " << error;
+                        break;
+                    }
+                }
+                else if (size != static_cast<int>(outData.size()))
+                {
+                    Log(Log::Level::ALL) << "Socket did not send all data, sent " << size << " out of " << outData.size() << " bytes";
+                }
+                else if (size)
+                {
+                    Log(Log::Level::ALL) << "Socket sent " << size << " bytes";
+                }
+
+                if (size > 0)
+                {
+                    outData.erase(outData.begin(), outData.begin() + size);
+                }
+            }
+
 #ifdef _MSC_VER
             if (closesocket(socketFd) < 0)
 #else
@@ -93,10 +131,47 @@ namespace cppsocket
 
     bool Socket::close()
     {
-        ready = false;
-
         if (socketFd != INVALID_SOCKET)
         {
+            // send remainig data
+            while (ready && !outData.empty())
+            {
+#ifdef _MSC_VER
+                int dataSize = static_cast<int>(outData.size());
+#else
+                size_t dataSize = outData.size();
+#endif
+                int size = static_cast<int>(::send(socketFd, reinterpret_cast<const char*>(outData.data()), dataSize, 0));
+
+                if (size < 0)
+                {
+                    int error = getLastError();
+                    if (error != EAGAIN &&
+#ifdef _MSC_VER
+                        error != WSAEWOULDBLOCK &&
+#endif
+                        error != EWOULDBLOCK)
+                    {
+                        Log(Log::Level::ERR) << "Failed to send data, error: " << error;
+                        outData.clear();
+                        break;
+                    }
+                }
+                else if (size != static_cast<int>(outData.size()))
+                {
+                    Log(Log::Level::ALL) << "Socket did not send all data, sent " << size << " out of " << outData.size() << " bytes";
+                }
+                else if (size)
+                {
+                    Log(Log::Level::ALL) << "Socket sent " << size << " bytes";
+                }
+                
+                if (size > 0)
+                {
+                    outData.erase(outData.begin(), outData.begin() + size);
+                }
+            }
+
 #ifdef _MSC_VER
             int result = closesocket(socketFd);
 #else
@@ -114,8 +189,9 @@ namespace cppsocket
             {
                 Log(Log::Level::INFO) << "Socket closed";
             }
-
         }
+
+        ready = false;
 
         return true;
     }
