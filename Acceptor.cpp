@@ -22,7 +22,7 @@ namespace cppsocket
     static const int WAITING_QUEUE_SIZE = 5;
 
     Acceptor::Acceptor(Network& aNetwork):
-        Socket(aNetwork, INVALID_SOCKET)
+        Socket(aNetwork)
     {
     }
 
@@ -175,7 +175,7 @@ namespace cppsocket
         {
             Log(Log::Level::INFO) << "Client connected from " << ipToString(address.sin_addr.s_addr);
 
-            Socket socket(network, clientFd);
+            Socket socket(network, clientFd, true);
 
             if (acceptCallback)
             {

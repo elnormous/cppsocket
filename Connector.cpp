@@ -20,7 +20,7 @@
 namespace cppsocket
 {
     Connector::Connector(Network& aNetwork):
-        Socket(aNetwork, INVALID_SOCKET)
+        Socket(aNetwork)
     {
     }
 

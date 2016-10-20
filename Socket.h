@@ -43,12 +43,14 @@ namespace cppsocket
     }
 
     class Network;
+    class Acceptor;
 
     class Socket
     {
         friend Network;
+        friend Acceptor;
     public:
-        Socket(Network& aNetwork, socket_t aSocketFd = INVALID_SOCKET, bool aReady = false);
+        Socket(Network& aNetwork);
         virtual ~Socket();
 
         Socket(const Socket&) = delete;
@@ -77,6 +79,8 @@ namespace cppsocket
         bool hasOutData() const { return !outData.empty(); }
 
     protected:
+        Socket(Network& aNetwork, socket_t aSocketFd, bool aReady);
+
         virtual bool read();
         virtual bool write();
         virtual bool disconnected();
