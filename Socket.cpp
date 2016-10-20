@@ -19,8 +19,8 @@ namespace cppsocket
 {
     static uint8_t TEMP_BUFFER[65536];
 
-    Socket::Socket(Network& pNetwork, socket_t pSocketFd):
-        network(pNetwork), socketFd(pSocketFd)
+    Socket::Socket(Network& aNetwork, socket_t aSocketFd, bool aReady):
+        network(aNetwork), socketFd(aSocketFd), ready(aReady)
     {
         network.addSocket(*this);
     }

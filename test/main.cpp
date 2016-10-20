@@ -29,7 +29,7 @@ int main(int argc, const char* argv[])
     cppsocket::Network network;
     cppsocket::Acceptor server(network);
     cppsocket::Connector client(network);
-    cppsocket::Socket clientSocket(network);
+    std::vector<cppsocket::Socket> clientSockets;
 
     if (type == "server")
     {
@@ -40,14 +40,14 @@ int main(int argc, const char* argv[])
         server.setBlocking(false);
         server.startAccept(cppsocket::ANY_ADDRESS, port);
 
-        server.setAcceptCallback([&clientSocket](cppsocket::Socket& c) {
+        server.setAcceptCallback([&clientSockets](cppsocket::Socket& c) {
             std::cout << "Client connected" << std::endl;
             c.startRead();
             c.send({'t', 'e', 's', 't', '\0'});
             c.setCloseCallback([](cppsocket::Socket& socket) {
                 std::cout << "Client at " << cppsocket::ipToString(socket.getIPAddress()) << " disconnected" << std::endl;
             });
-            clientSocket = std::move(c);
+            clientSockets.push_back(std::move(c));
         });
     }
     else if (type == "client")

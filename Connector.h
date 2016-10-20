@@ -12,7 +12,7 @@ namespace cppsocket
     class Connector: public Socket
     {
     public:
-        Connector(Network& network);
+        Connector(Network& aNetwork);
         virtual ~Connector();
 
         Connector(Connector&& other);

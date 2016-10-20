@@ -19,8 +19,8 @@
 
 namespace cppsocket
 {
-    Connector::Connector(Network& network):
-        Socket(network, INVALID_SOCKET)
+    Connector::Connector(Network& aNetwork):
+        Socket(aNetwork, INVALID_SOCKET)
     {
     }
 

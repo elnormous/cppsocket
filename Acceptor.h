@@ -13,7 +13,7 @@ namespace cppsocket
     class Acceptor: public Socket
     {
     public:
-        Acceptor(Network& network);
+        Acceptor(Network& aNetwork);
         virtual ~Acceptor();
 
         Acceptor(Acceptor&& other);

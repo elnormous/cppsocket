@@ -48,7 +48,7 @@ namespace cppsocket
     {
         friend Network;
     public:
-        Socket(Network& pNetwork, socket_t pSocketFd = INVALID_SOCKET);
+        Socket(Network& aNetwork, socket_t aSocketFd = INVALID_SOCKET, bool aReady = false);
         virtual ~Socket();
 
         Socket(const Socket&) = delete;

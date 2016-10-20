@@ -21,7 +21,7 @@ namespace cppsocket
 {
     static const int WAITING_QUEUE_SIZE = 5;
 
-    Acceptor::Acceptor(Network& network):
+    Acceptor::Acceptor(Network& aNetwork):
         Socket(network, INVALID_SOCKET)
     {
     }

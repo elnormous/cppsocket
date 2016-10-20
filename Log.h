@@ -26,7 +26,7 @@ namespace cppsocket
         {
         }
 
-        Log(Level pLevel): level(pLevel)
+        Log(Level aLevel): level(aLevel)
         {
         }
 

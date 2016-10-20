@@ -6,6 +6,7 @@
 
 #include <errno.h>
 #include <vector>
+#include <map>
 #include <memory>
 #include <string>
 #include <chrono>
@@ -31,7 +32,8 @@ namespace cppsocket
         void addSocket(Socket& socket);
         void removeSocket(Socket& socket);
 
-        std::vector<std::reference_wrapper<Socket>> sockets;
+        std::vector<Socket*> sockets;
+        std::map<socket_t, Socket*> socketMap;
 
         std::chrono::steady_clock::time_point previousTime;
     };

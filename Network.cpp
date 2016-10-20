@@ -3,7 +3,6 @@
 //
 
 #include <algorithm>
-#include <map>
 #include <chrono>
 #ifdef _MSC_VER
 #define NOMINMAX
@@ -59,21 +58,19 @@ namespace cppsocket
         std::vector<pollfd> pollFds;
         pollFds.reserve(sockets.size());
 
-        std::map<socket_t, std::reference_wrapper<Socket>> socketMap;
+        socketMap.clear();
 
-        for (const auto& s : sockets)
+        for (auto socket : sockets)
         {
-            Socket& socket = s.get();
-
-            if (socket.socketFd != INVALID_SOCKET)
+            if (socket->socketFd != INVALID_SOCKET)
             {
                 pollfd pollFd;
-                pollFd.fd = socket.socketFd;
+                pollFd.fd = socket->socketFd;
                 pollFd.events = POLLIN | POLLOUT;
 
                 pollFds.push_back(pollFd);
 
-                socketMap.insert(std::pair<socket_t, std::reference_wrapper<Socket>>(socket.socketFd, socket));
+                socketMap.insert(std::pair<socket_t, Socket*>(socket->socketFd, socket));
             }
         }
 
@@ -98,19 +95,19 @@ namespace cppsocket
 
                 if (iter != socketMap.end())
                 {
-                    Socket& socket = iter->second;
+                    Socket* socket = iter->second;
 
                     if (pollFd.revents & POLLIN)
                     {
-                        socket.read();
+                        socket->read();
                     }
 
                     if (pollFd.revents & POLLOUT)
                     {
-                        socket.write();
+                        socket->write();
                     }
 
-                    socket.update(delta);
+                    socket->update(delta);
                 }
             }
         }
@@ -120,16 +117,28 @@ namespace cppsocket
 
     void Network::addSocket(Socket& socket)
     {
-        sockets.push_back(socket);
+        sockets.push_back(&socket);
     }
 
     void Network::removeSocket(Socket& socket)
     {
-        std::vector<std::reference_wrapper<Socket>>::iterator i = std::find_if(sockets.begin(), sockets.end(), [&socket](const std::reference_wrapper<Socket>& sock) { return &socket == &sock.get(); });
+        auto vectorIterator = std::find(sockets.begin(), sockets.end(), &socket);
 
-        if (i != sockets.end())
+        if (vectorIterator != sockets.end())
         {
-            sockets.erase(i);
+            sockets.erase(vectorIterator);
+        }
+
+        for (auto mapIterator = socketMap.begin(); mapIterator != socketMap.end();)
+        {
+            if (mapIterator->second == &socket)
+            {
+                mapIterator = socketMap.erase(mapIterator);
+            }
+            else
+            {
+                ++mapIterator;
+            }
         }
     }
 }
