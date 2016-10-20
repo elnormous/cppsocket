@@ -22,6 +22,7 @@ namespace cppsocket
     Socket::Socket(Network& aNetwork):
         network(aNetwork)
     {
+        network.addSocket(*this);
     }
 
     Socket::Socket(Network& aNetwork, socket_t aSocketFd, bool aReady):
