@@ -171,7 +171,7 @@ namespace cppsocket
                 {
                     Log(Log::Level::ALL) << "Socket sent " << size << " bytes to " << ipToString(ipAddress) << ":" << port;
                 }
-                
+
                 if (size > 0)
                 {
                     outData.erase(outData.begin(), outData.begin() + size);

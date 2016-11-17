@@ -60,7 +60,7 @@ namespace cppsocket
     void Connector::update(float delta)
     {
         Socket::update(delta);
-        
+
         if (connecting)
         {
             timeSinceConnect += delta;
@@ -217,7 +217,7 @@ namespace cppsocket
         {
             connecting = false;
             ready = false;
-            
+
             Log(Log::Level::WARN) << "Failed to connect to " << ipToString(ipAddress) << ":" << port;
 
             if (connectErrorCallback)
