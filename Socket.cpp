@@ -25,8 +25,8 @@ namespace cppsocket
         network.addSocket(*this);
     }
 
-    Socket::Socket(Network& aNetwork, socket_t aSocketFd, bool aReady):
-        network(aNetwork), socketFd(aSocketFd), ready(aReady)
+    Socket::Socket(Network& aNetwork, socket_t aSocketFd, bool aReady, uint32_t aIpAddress, uint16_t aPort):
+        network(aNetwork), socketFd(aSocketFd), ready(aReady), ipAddress(aIpAddress), port(aPort)
     {
         network.addSocket(*this);
     }

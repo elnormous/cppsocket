@@ -175,7 +175,7 @@ namespace cppsocket
         {
             Log(Log::Level::INFO) << "Client connected from " << ipToString(address.sin_addr.s_addr);
 
-            Socket socket(network, clientFd, true);
+            Socket socket(network, clientFd, true, address.sin_addr.s_addr, ntohs(address.sin_port));
 
             if (acceptCallback)
             {

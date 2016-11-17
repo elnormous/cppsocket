@@ -79,7 +79,7 @@ namespace cppsocket
         bool hasOutData() const { return !outData.empty(); }
 
     protected:
-        Socket(Network& aNetwork, socket_t aSocketFd, bool aReady);
+        Socket(Network& aNetwork, socket_t aSocketFd, bool aReady, uint32_t aIpAddress, uint16_t aPort);
 
         virtual bool read();
         virtual bool write();
