@@ -173,7 +173,7 @@ namespace cppsocket
         }
         else
         {
-            Log(Log::Level::INFO) << "Client connected from " << ipToString(address.sin_addr.s_addr);
+            Log(Log::Level::INFO) << "Client connected from " << ipToString(address.sin_addr.s_addr) << ":" << ntohs(address.sin_port) << " to " << ipToString(ipAddress) << ":" << port;
 
             Socket socket(network, clientFd, true, address.sin_addr.s_addr, ntohs(address.sin_port));
 
