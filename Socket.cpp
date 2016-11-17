@@ -56,17 +56,17 @@ namespace cppsocket
 #endif
                         error != EWOULDBLOCK)
                     {
-                        Log(Log::Level::ERR) << "Failed to send data, error: " << error;
+                        Log(Log::Level::ERR) << "Failed to send data to " << ipToString(ipAddress) << ":" << port << ", error: " << error;
                         break;
                     }
                 }
                 else if (size != static_cast<int>(outData.size()))
                 {
-                    Log(Log::Level::ALL) << "Socket did not send all data, sent " << size << " out of " << outData.size() << " bytes";
+                    Log(Log::Level::ALL) << "Socket " << ipToString(ipAddress) << ":" << port << " did not send all data, sent " << size << " out of " << outData.size() << " bytes";
                 }
                 else if (size)
                 {
-                    Log(Log::Level::ALL) << "Socket sent " << size << " bytes";
+                    Log(Log::Level::ALL) << "Socket " << ipToString(ipAddress) << ":" << port << " sent " << size << " bytes";
                 }
 
                 if (size > 0)
@@ -82,11 +82,11 @@ namespace cppsocket
 #endif
             {
                 int error = getLastError();
-                Log(Log::Level::ERR) << "Failed to close socket, error: " << error;
+                Log(Log::Level::ERR) << "Failed to close socket " << ipToString(ipAddress) << ":" << port << ", error: " << error;
             }
             else
             {
-                Log(Log::Level::INFO) << "Socket closed";
+                Log(Log::Level::INFO) << "Socket " << ipToString(ipAddress) << ":" << port << " closed";
             }
         }
     }
@@ -158,18 +158,18 @@ namespace cppsocket
 #endif
                         error != EWOULDBLOCK)
                     {
-                        Log(Log::Level::ERR) << "Failed to send data, error: " << error;
+                        Log(Log::Level::ERR) << "Failed to send data to " << ipToString(ipAddress) << ":" << port << ", error: " << error;
                         outData.clear();
                         break;
                     }
                 }
                 else if (size != static_cast<int>(outData.size()))
                 {
-                    Log(Log::Level::ALL) << "Socket did not send all data, sent " << size << " out of " << outData.size() << " bytes";
+                    Log(Log::Level::ALL) << "Socket did not send all data to " << ipToString(ipAddress) << ":" << port << ", sent " << size << " out of " << outData.size() << " bytes";
                 }
                 else if (size)
                 {
-                    Log(Log::Level::ALL) << "Socket sent " << size << " bytes";
+                    Log(Log::Level::ALL) << "Socket sent " << size << " bytes to " << ipToString(ipAddress) << ":" << port;
                 }
                 
                 if (size > 0)
@@ -188,12 +188,12 @@ namespace cppsocket
             if (result < 0)
             {
                 int error = getLastError();
-                Log(Log::Level::ERR) << "Failed to close socket, error: " << error;
+                Log(Log::Level::ERR) << "Failed to close socket " << ipToString(ipAddress) << ":" << port << ", error: " << error;
                 return false;
             }
             else
             {
-                Log(Log::Level::INFO) << "Socket closed";
+                Log(Log::Level::INFO) << "Socket " << ipToString(ipAddress) << ":" << port << " closed";
             }
         }
 
@@ -316,18 +316,18 @@ namespace cppsocket
 #endif
                 error == EWOULDBLOCK)
             {
-                Log(Log::Level::WARN) << "Nothing to read from socket";
+                Log(Log::Level::WARN) << "Nothing to read from socket " << ipToString(ipAddress) << ":" << port;
                 return true;
             }
             else if (error == ECONNRESET)
             {
-                Log(Log::Level::INFO) << "Connection reset by peer";
+                Log(Log::Level::INFO) << "Connection to " << ipToString(ipAddress) << ":" << port << " reset by peer";
                 disconnected();
                 return false;
             }
             else
             {
-                Log(Log::Level::ERR) << "Failed to read from socket, error: " << error;
+                Log(Log::Level::ERR) << "Failed to read from socket " << ipToString(ipAddress) << ":" << port << ", error: " << error;
                 disconnected();
                 return false;
             }
@@ -339,7 +339,7 @@ namespace cppsocket
             return true;
         }
 
-        Log(Log::Level::ALL) << "Socket received " << size << " bytes";
+        Log(Log::Level::ALL) << "Socket " << ipToString(ipAddress) << ":" << port << " received " << size << " bytes";
 
         inData.insert(inData.end(), TEMP_BUFFER, TEMP_BUFFER + size);
 
@@ -376,7 +376,7 @@ namespace cppsocket
 #endif
                     error != EWOULDBLOCK)
                 {
-                    Log(Log::Level::ERR) << "Failed to send data, error: " << error;
+                    Log(Log::Level::ERR) << "Failed to send data to " << ipToString(ipAddress) << ":" << port << ", error: " << error;
 
                     outData.clear();
 
@@ -385,11 +385,11 @@ namespace cppsocket
             }
             else if (size != static_cast<int>(outData.size()))
             {
-                Log(Log::Level::ALL) << "Socket did not send all data, sent " << size << " out of " << outData.size() << " bytes";
+                Log(Log::Level::ALL) << "Socket did not send all data to " << ipToString(ipAddress) << ":" << port << ", sent " << size << " out of " << outData.size() << " bytes";
             }
             else if (size)
             {
-                Log(Log::Level::ALL) << "Socket sent " << size << " bytes";
+                Log(Log::Level::ALL) << "Socket sent " << size << " bytes to " << ipToString(ipAddress) << ":" << port;
             }
 
             if (size > 0)
@@ -405,7 +405,7 @@ namespace cppsocket
     {
         if (ready)
         {
-            Log(Log::Level::INFO) << "Socket disconnected";
+            Log(Log::Level::INFO) << "Socket " << ipToString(ipAddress) << ":" << port << " disconnected";
 
             close();
 

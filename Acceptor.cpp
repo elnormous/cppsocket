@@ -70,7 +70,7 @@ namespace cppsocket
         if (getaddrinfo(addressStr.c_str(), portStr.empty() ? nullptr : portStr.c_str(), nullptr, &result) != 0)
         {
             int error = getLastError();
-            Log(Log::Level::ERR) << "Failed to get address info, error: " << error;
+            Log(Log::Level::ERR) << "Failed to get address info of " << address << ", error: " << error;
             return false;
         }
 
