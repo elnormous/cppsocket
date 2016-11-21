@@ -41,7 +41,8 @@ namespace cppsocket
         {
             flush();
             level = other.level;
-            s = std::move(other.s);
+            s << other.s.rdbuf();
+            other.s.clear();
         }
 
         Log& operator=(const Log& other)
@@ -57,7 +58,8 @@ namespace cppsocket
         {
             flush();
             level = other.level;
-            s = std::move(other.s);
+            s << other.s.rdbuf();
+            other.s.clear();
 
             return *this;
         }
