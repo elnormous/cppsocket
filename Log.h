@@ -32,14 +32,12 @@ namespace cppsocket
 
         Log(const Log& other)
         {
-            flush();
             level = other.level;
             s << other.s.rdbuf();
         }
 
         Log(Log&& other)
         {
-            flush();
             level = other.level;
             s << other.s.rdbuf();
             other.s.clear();
