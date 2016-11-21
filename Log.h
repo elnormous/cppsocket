@@ -95,6 +95,16 @@ namespace cppsocket
             return *this;
         }
 
+        Log& operator<<(char* val)
+        {
+            if (level <= threshold)
+            {
+                s += val;
+            }
+
+            return *this;
+        }
+
     private:
         void flush();
         
