@@ -25,7 +25,7 @@ namespace cppsocket
 
     void Log::flush()
     {
-        if (!s.empty() && level <= threshold)
+        if (!s.empty())
         {
             if (level == Level::ERR ||
                 level == Level::WARN)
@@ -56,8 +56,7 @@ namespace cppsocket
             syslog(priority, "%s", s.c_str());
 #endif
 #endif
+            s.clear();
         }
-
-        s.clear();
     }
 }

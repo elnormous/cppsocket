@@ -67,21 +67,30 @@ namespace cppsocket
 
         template<typename T> Log& operator<<(T val)
         {
-            s += std::to_string(val);
+            if (level <= threshold)
+            {
+                s += std::to_string(val);
+            }
 
             return *this;
         }
 
         Log& operator<<(const std::string& val)
         {
-            s += val;
+            if (level <= threshold)
+            {
+                s += val;
+            }
 
             return *this;
         }
 
         Log& operator<<(const char* val)
         {
-            s += val;
+            if (level <= threshold)
+            {
+                s += val;
+            }
 
             return *this;
         }
