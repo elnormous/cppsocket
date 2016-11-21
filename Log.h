@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <sstream>
+#include <string>
 
 namespace cppsocket
 {
@@ -33,21 +33,20 @@ namespace cppsocket
         Log(const Log& other)
         {
             level = other.level;
-            s << other.s.rdbuf();
+            s = other.s;
         }
 
         Log(Log&& other)
         {
             level = other.level;
-            s << other.s.rdbuf();
-            other.s.clear();
+            s = std::move(other.s);
         }
 
         Log& operator=(const Log& other)
         {
             flush();
             level = other.level;
-            s << other.s.rdbuf();
+            s = other.s;
 
             return *this;
         }
@@ -56,8 +55,7 @@ namespace cppsocket
         {
             flush();
             level = other.level;
-            s << other.s.rdbuf();
-            other.s.clear();
+            s = std::move(other.s);
 
             return *this;
         }
@@ -67,9 +65,23 @@ namespace cppsocket
             flush();
         }
 
-        template <typename T> Log& operator << (T val)
+        template<typename T> Log& operator<<(T val)
         {
-            s << val;
+            s += std::to_string(val);
+
+            return *this;
+        }
+
+        Log& operator<<(const std::string& val)
+        {
+            s += val;
+
+            return *this;
+        }
+
+        Log& operator<<(const char* val)
+        {
+            s += val;
 
             return *this;
         }
@@ -78,6 +90,6 @@ namespace cppsocket
         void flush();
         
         Level level = Level::INFO;
-        std::stringstream s;
+        std::string s;
     };
 }

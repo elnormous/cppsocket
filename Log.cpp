@@ -25,16 +25,16 @@ namespace cppsocket
 
     void Log::flush()
     {
-        if (s.rdbuf()->in_avail() > 0 && level <= threshold)
+        if (!s.empty() && level <= threshold)
         {
             if (level == Level::ERR ||
                 level == Level::WARN)
             {
-                std::cerr << s.str() << std::endl;
+                std::cerr << s << std::endl;
             }
             else
             {
-                std::cout << s.str() << std::endl;
+                std::cout << s << std::endl;
             }
 
 #ifdef _MSC_VER
@@ -53,10 +53,11 @@ namespace cppsocket
                 case Level::ALL: priority = LOG_DEBUG; break;
                 default: break;
             }
-            syslog(priority, "%s", s.str().c_str());
+            syslog(priority, "%s", s.c_str());
 #endif
 #endif
-            s.clear();
         }
+
+        s.clear();
     }
 }
