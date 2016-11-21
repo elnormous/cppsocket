@@ -39,7 +39,7 @@ namespace cppsocket
 
 #ifdef _MSC_VER
             wchar_t szBuffer[MAX_PATH];
-            MultiByteToWideChar(CP_UTF8, 0, s.str().c_str(), -1, szBuffer, MAX_PATH);
+            MultiByteToWideChar(CP_UTF8, 0, s.c_str(), -1, szBuffer, MAX_PATH);
             StringCchCatW(szBuffer, sizeof(szBuffer), L"\n");
             OutputDebugStringW(szBuffer);
 #else
