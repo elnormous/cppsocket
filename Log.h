@@ -30,7 +30,42 @@ namespace cppsocket
         {
         }
 
-        ~Log();
+        Log(const Log& other)
+        {
+            flush();
+            level = other.level;
+            s << other.s.rdbuf();
+        }
+
+        Log(Log&& other)
+        {
+            flush();
+            level = other.level;
+            s = std::move(other.s);
+        }
+
+        Log& operator=(const Log& other)
+        {
+            flush();
+            level = other.level;
+            s << other.s.rdbuf();
+
+            return *this;
+        }
+
+        Log& operator=(Log&& other)
+        {
+            flush();
+            level = other.level;
+            s = std::move(other.s);
+
+            return *this;
+        }
+
+        ~Log()
+        {
+            flush();
+        }
 
         template <typename T> Log& operator << (T val)
         {
@@ -40,6 +75,8 @@ namespace cppsocket
         }
 
     private:
+        void flush();
+        
         Level level = Level::INFO;
         std::stringstream s;
     };
