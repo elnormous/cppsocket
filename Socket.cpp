@@ -292,7 +292,7 @@ namespace cppsocket
 
     bool Socket::send(std::vector<uint8_t> buffer)
     {
-        if (!ready)
+        if (socketFd == INVALID_SOCKET)
         {
             return false;
         }
