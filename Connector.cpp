@@ -125,7 +125,10 @@ namespace cppsocket
 
         if (socketFd == INVALID_SOCKET)
         {
-            createSocketFd();
+            if (!createSocketFd())
+            {
+                return false;
+            }
         }
 
         ipAddress = address;
