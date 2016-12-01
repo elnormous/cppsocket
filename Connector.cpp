@@ -195,11 +195,6 @@ namespace cppsocket
 
     bool Connector::write()
     {
-        if (!Socket::write())
-        {
-            return false;
-        }
-
         if (connecting)
         {
             connecting = false;
@@ -209,6 +204,11 @@ namespace cppsocket
             {
                 connectCallback();
             }
+        }
+        
+        if (!Socket::write())
+        {
+            return false;
         }
 
         return true;
