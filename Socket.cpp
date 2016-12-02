@@ -48,7 +48,6 @@ namespace cppsocket
         port(other.port),
         readCallback(std::move(other.readCallback)),
         closeCallback(std::move(other.closeCallback)),
-        inData(std::move(other.inData)),
         outData(std::move(other.outData))
     {
         network.addSocket(*this);
@@ -71,7 +70,6 @@ namespace cppsocket
         port = other.port;
         readCallback = std::move(other.readCallback);
         closeCallback = std::move(other.closeCallback);
-        inData = std::move(other.inData);
         outData = std::move(other.outData);
 
         other.socketFd = INVALID_SOCKET;
@@ -105,7 +103,6 @@ namespace cppsocket
         ipAddress = 0;
         port = 0;
         ready = false;
-        inData.clear();
         outData.clear();
 
         return result;
@@ -292,16 +289,11 @@ namespace cppsocket
 
         Log(Log::Level::ALL) << "Socket " << ipToString(ipAddress) << ":" << port << " received " << size << " bytes";
 
-        inData.insert(inData.end(), TEMP_BUFFER, TEMP_BUFFER + size);
+        std::vector<uint8_t> data(TEMP_BUFFER, TEMP_BUFFER + size);
 
-        if (!inData.empty())
+        if (readCallback)
         {
-            if (readCallback)
-            {
-                readCallback(*this, inData);
-            }
-
-            inData.clear();
+            readCallback(*this, data);
         }
         
         return true;
