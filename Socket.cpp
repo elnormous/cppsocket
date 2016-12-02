@@ -270,6 +270,12 @@ namespace cppsocket
                 disconnected();
                 return false;
             }
+            else if (error == ECONNREFUSED)
+            {
+                Log(Log::Level::INFO) << "Connection to " << ipToString(ipAddress) << ":" << port << " refused";
+                disconnected();
+                return false;
+            }
             else
             {
                 Log(Log::Level::ERR) << "Failed to read from socket " << ipToString(ipAddress) << ":" << port << ", error: " << error;
