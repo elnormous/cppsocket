@@ -59,7 +59,7 @@ namespace cppsocket
         Socket(Socket&& other);
         Socket& operator=(Socket&& other);
 
-        bool close();
+        virtual bool close();
         virtual void update(float delta);
 
         bool startRead();
@@ -83,9 +83,14 @@ namespace cppsocket
 
         virtual bool read();
         virtual bool write();
+
+        bool readData();
+        bool writeData();
+
         virtual bool disconnected();
 
         bool createSocketFd();
+        bool closeSocketFd();
         bool setFdBlocking(bool block);
 
         Network& network;

@@ -24,10 +24,6 @@ namespace cppsocket
     {
     }
 
-    Connector::~Connector()
-    {
-    }
-
     Connector::Connector(Connector&& other):
         Socket(std::move(other)),
         connectTimeout(other.connectTimeout),
@@ -55,6 +51,13 @@ namespace cppsocket
         other.timeSinceConnect = 0.0f;
 
         return *this;
+    }
+
+    bool Connector::close()
+    {
+        connecting = false;
+
+        return Socket::close();
     }
 
     void Connector::update(float delta)
@@ -123,12 +126,14 @@ namespace cppsocket
         ready = false;
         connecting = false;
 
-        if (socketFd == INVALID_SOCKET)
+        if (socketFd != INVALID_SOCKET)
         {
-            if (!createSocketFd())
-            {
-                return false;
-            }
+            close();
+        }
+
+        if (!createSocketFd())
+        {
+            return false;
         }
 
         ipAddress = address;

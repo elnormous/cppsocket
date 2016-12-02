@@ -14,7 +14,6 @@ namespace cppsocket
     {
     public:
         Acceptor(Network& aNetwork);
-        virtual ~Acceptor();
 
         Acceptor(Acceptor&& other);
         Acceptor& operator=(Acceptor&& other);

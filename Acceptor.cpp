@@ -26,10 +26,6 @@ namespace cppsocket
     {
     }
 
-    Acceptor::~Acceptor()
-    {
-    }
-
     Acceptor::Acceptor(Acceptor&& other):
         Socket(std::move(other)),
         acceptCallback(std::move(other.acceptCallback))
@@ -87,12 +83,14 @@ namespace cppsocket
     {
         ready = false;
 
-        if (socketFd == INVALID_SOCKET)
+        if (socketFd != INVALID_SOCKET)
         {
-            if (!createSocketFd())
-            {
-                return false;
-            }
+            close();
+        }
+
+        if (!createSocketFd())
+        {
+            return false;
         }
 
         ipAddress = address;

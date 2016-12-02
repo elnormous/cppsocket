@@ -13,11 +13,11 @@ namespace cppsocket
     {
     public:
         Connector(Network& aNetwork);
-        virtual ~Connector();
 
         Connector(Connector&& other);
         Connector& operator=(Connector&& other);
 
+        virtual bool close() override;
         virtual void update(float delta) override;
 
         bool connect(const std::string& address, uint16_t newPort = 0);

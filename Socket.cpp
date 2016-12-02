@@ -35,60 +35,8 @@ namespace cppsocket
     {
         network.removeSocket(*this);
 
-        if (socketFd != INVALID_SOCKET)
-        {
-            // send remainig data
-            while (ready && !outData.empty())
-            {
-#ifdef _MSC_VER
-                int dataSize = static_cast<int>(outData.size());
-#else
-                size_t dataSize = outData.size();
-#endif
-                int size = static_cast<int>(::send(socketFd, reinterpret_cast<const char*>(outData.data()), dataSize, 0));
-
-                if (size < 0)
-                {
-                    int error = getLastError();
-                    if (error != EAGAIN &&
-#ifdef _MSC_VER
-                        error != WSAEWOULDBLOCK &&
-#endif
-                        error != EWOULDBLOCK)
-                    {
-                        Log(Log::Level::ERR) << "Failed to send data to " << ipToString(ipAddress) << ":" << port << ", error: " << error;
-                        break;
-                    }
-                }
-                else if (size != static_cast<int>(outData.size()))
-                {
-                    Log(Log::Level::ALL) << "Socket " << ipToString(ipAddress) << ":" << port << " did not send all data, sent " << size << " out of " << outData.size() << " bytes";
-                }
-                else if (size)
-                {
-                    Log(Log::Level::ALL) << "Socket " << ipToString(ipAddress) << ":" << port << " sent " << size << " bytes";
-                }
-
-                if (size > 0)
-                {
-                    outData.erase(outData.begin(), outData.begin() + size);
-                }
-            }
-
-#ifdef _MSC_VER
-            if (closesocket(socketFd) < 0)
-#else
-            if (::close(socketFd) < 0)
-#endif
-            {
-                int error = getLastError();
-                Log(Log::Level::ERR) << "Failed to close socket " << ipToString(ipAddress) << ":" << port << ", error: " << error;
-            }
-            else
-            {
-                Log(Log::Level::INFO) << "Socket " << ipToString(ipAddress) << ":" << port << " closed";
-            }
-        }
+        writeData();
+        closeSocketFd();
     }
 
     Socket::Socket(Socket&& other):
@@ -114,7 +62,7 @@ namespace cppsocket
 
     Socket& Socket::operator=(Socket&& other)
     {
-        close();
+        closeSocketFd();
 
         socketFd = other.socketFd;
         ready = other.ready;
@@ -137,69 +85,30 @@ namespace cppsocket
 
     bool Socket::close()
     {
+        bool result = true;
+
         if (socketFd != INVALID_SOCKET)
         {
-            // send remainig data
-            while (ready && !outData.empty())
+            writeData();
+
+            if (!closeSocketFd())
             {
-#ifdef _MSC_VER
-                int dataSize = static_cast<int>(outData.size());
-#else
-                size_t dataSize = outData.size();
-#endif
-                int size = static_cast<int>(::send(socketFd, reinterpret_cast<const char*>(outData.data()), dataSize, 0));
-
-                if (size < 0)
-                {
-                    int error = getLastError();
-                    if (error != EAGAIN &&
-#ifdef _MSC_VER
-                        error != WSAEWOULDBLOCK &&
-#endif
-                        error != EWOULDBLOCK)
-                    {
-                        Log(Log::Level::ERR) << "Failed to send data to " << ipToString(ipAddress) << ":" << port << ", error: " << error;
-                        outData.clear();
-                        break;
-                    }
-                }
-                else if (size != static_cast<int>(outData.size()))
-                {
-                    Log(Log::Level::ALL) << "Socket did not send all data to " << ipToString(ipAddress) << ":" << port << ", sent " << size << " out of " << outData.size() << " bytes";
-                }
-                else if (size)
-                {
-                    Log(Log::Level::ALL) << "Socket sent " << size << " bytes to " << ipToString(ipAddress) << ":" << port;
-                }
-
-                if (size > 0)
-                {
-                    outData.erase(outData.begin(), outData.begin() + size);
-                }
+                result = false;
             }
 
-#ifdef _MSC_VER
-            int result = closesocket(socketFd);
-#else
-            int result = ::close(socketFd);
-#endif
-            socketFd = INVALID_SOCKET;
-
-            if (result < 0)
+            if (closeCallback)
             {
-                int error = getLastError();
-                Log(Log::Level::ERR) << "Failed to close socket " << ipToString(ipAddress) << ":" << port << ", error: " << error;
-                return false;
-            }
-            else
-            {
-                Log(Log::Level::INFO) << "Socket " << ipToString(ipAddress) << ":" << port << " closed";
+                closeCallback(*this);
             }
         }
 
+        ipAddress = 0;
+        port = 0;
         ready = false;
+        inData.clear();
+        outData.clear();
 
-        return true;
+        return result;
     }
 
     void Socket::update(float)
@@ -263,6 +172,32 @@ namespace cppsocket
         return true;
     }
 
+    bool Socket::closeSocketFd()
+    {
+        if (socketFd != INVALID_SOCKET)
+        {
+#ifdef _MSC_VER
+            int result = closesocket(socketFd);
+#else
+            int result = ::close(socketFd);
+#endif
+            socketFd = INVALID_SOCKET;
+
+            if (result < 0)
+            {
+                int error = getLastError();
+                Log(Log::Level::ERR) << "Failed to close socket " << ipToString(ipAddress) << ":" << port << ", error: " << error;
+                return false;
+            }
+            else
+            {
+                Log(Log::Level::INFO) << "Socket " << ipToString(ipAddress) << ":" << port << " closed";
+            }
+        }
+
+        return true;
+    }
+
     bool Socket::setFdBlocking(bool block)
     {
         if (socketFd == INVALID_SOCKET)
@@ -303,6 +238,16 @@ namespace cppsocket
     }
 
     bool Socket::read()
+    {
+        return readData();
+    }
+
+    bool Socket::write()
+    {
+        return writeData();
+    }
+
+    bool Socket::readData()
     {
         int size = static_cast<int>(recv(socketFd, reinterpret_cast<char*>(TEMP_BUFFER), sizeof(TEMP_BUFFER), 0));
 
@@ -352,11 +297,11 @@ namespace cppsocket
 
             inData.clear();
         }
-
+        
         return true;
     }
 
-    bool Socket::write()
+    bool Socket::writeData()
     {
         if (ready && !outData.empty())
         {
@@ -397,7 +342,7 @@ namespace cppsocket
                 outData.erase(outData.begin(), outData.begin() + size);
             }
         }
-
+        
         return true;
     }
 
@@ -408,11 +353,6 @@ namespace cppsocket
             Log(Log::Level::INFO) << "Socket " << ipToString(ipAddress) << ":" << port << " disconnected";
 
             close();
-
-            if (closeCallback)
-            {
-                closeCallback(*this);
-            }
         }
 
         return true;
