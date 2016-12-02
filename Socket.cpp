@@ -2,7 +2,6 @@
 //  cppsocket
 //
 
-#include <cstring>
 #ifdef _MSC_VER
 #include <ws2tcpip.h>
 #else
@@ -289,11 +288,11 @@ namespace cppsocket
 
         Log(Log::Level::ALL) << "Socket " << ipToString(ipAddress) << ":" << port << " received " << size << " bytes";
 
-        std::vector<uint8_t> data(TEMP_BUFFER, TEMP_BUFFER + size);
+        inData.assign(TEMP_BUFFER, TEMP_BUFFER + size);
 
         if (readCallback)
         {
-            readCallback(*this, data);
+            readCallback(*this, inData);
         }
         
         return true;

@@ -106,6 +106,7 @@ namespace cppsocket
         std::function<void(Socket&, const std::vector<uint8_t>&)> readCallback;
         std::function<void(Socket&)> closeCallback;
 
+        std::vector<uint8_t> inData;
         std::vector<uint8_t> outData;
     };
 }
