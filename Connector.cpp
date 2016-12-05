@@ -78,7 +78,7 @@ namespace cppsocket
 
                 if (connectErrorCallback)
                 {
-                    connectErrorCallback();
+                    connectErrorCallback(*this);
                 }
             }
         }
@@ -164,7 +164,7 @@ namespace cppsocket
                 Log(Log::Level::WARN) << "Failed to connect to " << ipToString(ipAddress) << ":" << port << ", error: " << error;
                 if (connectErrorCallback)
                 {
-                    connectErrorCallback();
+                    connectErrorCallback(*this);
                 }
                 return false;
             }
@@ -176,7 +176,7 @@ namespace cppsocket
             Log(Log::Level::INFO) << "Socket connected to " << ipToString(ipAddress) << ":" << port;
             if (connectCallback)
             {
-                connectCallback();
+                connectCallback(*this);
             }
         }
 
@@ -188,12 +188,12 @@ namespace cppsocket
         connectTimeout = timeout;
     }
 
-    void Connector::setConnectCallback(const std::function<void()>& newConnectCallback)
+    void Connector::setConnectCallback(const std::function<void(Socket&)>& newConnectCallback)
     {
         connectCallback = newConnectCallback;
     }
 
-    void Connector::setConnectErrorCallback(const std::function<void()>& newConnectErrorCallback)
+    void Connector::setConnectErrorCallback(const std::function<void(Socket&)>& newConnectErrorCallback)
     {
         connectErrorCallback = newConnectErrorCallback;
     }
@@ -207,7 +207,7 @@ namespace cppsocket
             Log(Log::Level::INFO) << "Socket connected to " << ipToString(ipAddress) << ":" << port;
             if (connectCallback)
             {
-                connectCallback();
+                connectCallback(*this);
             }
         }
         
@@ -230,7 +230,7 @@ namespace cppsocket
 
             if (connectErrorCallback)
             {
-                connectErrorCallback();
+                connectErrorCallback(*this);
             }
         }
         else
