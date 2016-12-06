@@ -73,6 +73,18 @@ int main(int argc, const char* argv[])
         client.setReadCallback([](cppsocket::Socket& socket, const std::vector<uint8_t>& data) {
             std::cout << "Got data: " << data.data() << " from " << cppsocket::ipToString(socket.getIPAddress()) << std::endl;
         });
+
+        client.setConnectCallback([](cppsocket::Socket& socket) {
+            std::cout << "Connected to " << cppsocket::ipToString(socket.getIPAddress()) << std::endl;
+
+            socket.send({'t', 'e', 's', 't', '\0'});
+        });
+
+        client.setConnectErrorCallback([&client, address](cppsocket::Socket& socket) {
+            std::cout << "Failed to connected to " << cppsocket::ipToString(socket.getIPAddress()) << std::endl;
+
+            client.connect(address);
+        });
     }
 
     const std::chrono::microseconds sleepTime(10000);
