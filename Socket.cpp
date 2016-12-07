@@ -92,11 +92,6 @@ namespace cppsocket
             {
                 result = false;
             }
-
-            if (closeCallback)
-            {
-                closeCallback(*this);
-            }
         }
 
         ipAddress = 0;
@@ -348,6 +343,11 @@ namespace cppsocket
         if (ready)
         {
             Log(Log::Level::INFO) << "Socket " << ipToString(ipAddress) << ":" << port << " disconnected";
+
+            if (closeCallback)
+            {
+                closeCallback(*this);
+            }
 
             close();
         }
