@@ -83,10 +83,8 @@ namespace cppsocket
                 return false;
             }
 
-            for (uint32_t i = 0; i < pollFds.size(); ++i)
+            for (pollfd& pollFd : pollFds)
             {
-                pollfd pollFd = pollFds[i];
-
                 auto iter = std::find_if(sockets.begin(), sockets.end(), [&pollFd](Socket* socket) {
                     return socket->socketFd == pollFd.fd;
                 });
