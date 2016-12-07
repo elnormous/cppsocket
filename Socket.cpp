@@ -299,10 +299,11 @@ namespace cppsocket
         {
 #ifdef _MSC_VER
             int dataSize = static_cast<int>(outData.size());
+            int size = ::send(socketFd, reinterpret_cast<const char*>(outData.data()), dataSize, 0);
 #else
-            size_t dataSize = outData.size();
+            ssize_t dataSize = static_cast<ssize_t>(outData.size());
+            ssize_t size = ::send(socketFd, reinterpret_cast<const char*>(outData.data()), outData.size(), 0);
 #endif
-            int size = static_cast<int>(::send(socketFd, reinterpret_cast<const char*>(outData.data()), dataSize, 0));
 
             if (size < 0)
             {
@@ -320,11 +321,11 @@ namespace cppsocket
                     return false;
                 }
             }
-            else if (size != static_cast<int>(outData.size()))
+            else if (size != dataSize)
             {
                 Log(Log::Level::ALL) << "Socket did not send all data to " << ipToString(ipAddress) << ":" << port << ", sent " << size << " out of " << outData.size() << " bytes";
             }
-            else if (size)
+            else
             {
                 Log(Log::Level::ALL) << "Socket sent " << size << " bytes to " << ipToString(ipAddress) << ":" << port;
             }
