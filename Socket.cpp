@@ -86,7 +86,10 @@ namespace cppsocket
 
         if (socketFd != INVALID_SOCKET)
         {
-            writeData();
+            if (ready)
+            {
+                writeData();
+            }
 
             if (!closeSocketFd())
             {
@@ -341,6 +344,8 @@ namespace cppsocket
 
     bool Socket::disconnected()
     {
+        bool result = true;
+
         if (ready)
         {
             Log(Log::Level::INFO) << "Socket " << ipToString(ipAddress) << ":" << port << " disconnected";
@@ -350,9 +355,20 @@ namespace cppsocket
                 closeCallback(*this);
             }
 
-            close();
+            if (socketFd != INVALID_SOCKET)
+            {
+                if (!closeSocketFd())
+                {
+                    result = false;
+                }
+            }
+
+            ipAddress = 0;
+            port = 0;
+            ready = false;
+            outData.clear();
         }
 
-        return true;
+        return result;
     }
 }
