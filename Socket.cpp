@@ -311,16 +311,31 @@ namespace cppsocket
             if (size < 0)
             {
                 int error = getLastError();
-                if (error != EAGAIN &&
+                if (error == EAGAIN ||
 #ifdef _MSC_VER
-                    error != WSAEWOULDBLOCK &&
+                    error == WSAEWOULDBLOCK ||
 #endif
-                    error != EWOULDBLOCK)
+                    error == EWOULDBLOCK)
                 {
-                    Log(Log::Level::ERR) << "Failed to send data to " << ipToString(ipAddress) << ":" << port << ", error: " << error;
-
-                    outData.clear();
-
+                    Log(Log::Level::WARN) << "Can not write to socket " << ipToString(ipAddress) << ":" << port << " now";
+                    return true;
+                }
+                else if (error == EPIPE)
+                {
+                    Log(Log::Level::ERR) << "Failed to send data to " << ipToString(ipAddress) << ":" << port << ", socket has been shut down";
+                    disconnected();
+                    return false;
+                }
+                else if (error == ECONNRESET)
+                {
+                    Log(Log::Level::INFO) << "Connection to " << ipToString(ipAddress) << ":" << port << " reset by peer";
+                    disconnected();
+                    return false;
+                }
+                else
+                {
+                    Log(Log::Level::ERR) << "Failed to write to socket " << ipToString(ipAddress) << ":" << port << ", error: " << error;
+                    disconnected();
                     return false;
                 }
             }
