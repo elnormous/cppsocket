@@ -365,6 +365,8 @@ namespace cppsocket
         {
             Log(Log::Level::INFO) << "Socket " << ipToString(ipAddress) << ":" << port << " disconnected";
 
+            ready = false;
+
             if (closeCallback)
             {
                 closeCallback(*this);
