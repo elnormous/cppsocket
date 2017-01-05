@@ -4,6 +4,8 @@
 
 #include <iostream>
 #include <string>
+#include <ctime>
+#include <iomanip>
 #ifdef _MSC_VER
 #include <windows.h>
 #include <strsafe.h>
@@ -27,14 +29,17 @@ namespace cppsocket
     {
         if (!s.empty())
         {
+            auto t = std::time(nullptr);
+            auto tm = *std::localtime(&t);
+
             if (level == Level::ERR ||
                 level == Level::WARN)
             {
-                std::cerr << s << std::endl;
+                std::cerr << std::put_time(&tm, "%Y-%m-%d %H:%M:%S") << ": " << s << std::endl;
             }
             else
             {
-                std::cout << s << std::endl;
+                std::cout << std::put_time(&tm, "%Y-%m-%d %H:%M:%S") << ": " << s << std::endl;
             }
 
 #ifdef _MSC_VER
