@@ -24,8 +24,12 @@ namespace cppsocket
         network.addSocket(*this);
     }
 
-    Socket::Socket(Network& aNetwork, socket_t aSocketFd, bool aReady, uint32_t aIpAddress, uint16_t aPort):
-        network(aNetwork), socketFd(aSocketFd), ready(aReady), ipAddress(aIpAddress), port(aPort)
+    Socket::Socket(Network& aNetwork, socket_t aSocketFd, bool aReady,
+                   uint32_t aLocalIPAddress, uint16_t aLocalPort,
+                   uint32_t aRemoteIPAddress, uint16_t aRemotePort):
+        network(aNetwork), socketFd(aSocketFd), ready(aReady),
+        localIPAddress(aLocalIPAddress), localPort(aLocalPort),
+        remoteIPAddress(aRemoteIPAddress), remotePort(aRemotePort)
     {
         network.addSocket(*this);
     }
@@ -43,8 +47,10 @@ namespace cppsocket
         socketFd(other.socketFd),
         ready(other.ready),
         blocking(other.blocking),
-        ipAddress(other.ipAddress),
-        port(other.port),
+        localIPAddress(other.localIPAddress),
+        localPort(other.localPort),
+        remoteIPAddress(other.remoteIPAddress),
+        remotePort(other.remotePort),
         readCallback(std::move(other.readCallback)),
         closeCallback(std::move(other.closeCallback)),
         outData(std::move(other.outData))
@@ -54,8 +60,10 @@ namespace cppsocket
         other.socketFd = INVALID_SOCKET;
         other.ready = false;
         other.blocking = true;
-        other.ipAddress = 0;
-        other.port = 0;
+        other.localIPAddress = 0;
+        other.localPort = 0;
+        other.remoteIPAddress = 0;
+        other.remotePort = 0;
     }
 
     Socket& Socket::operator=(Socket&& other)
@@ -65,8 +73,10 @@ namespace cppsocket
         socketFd = other.socketFd;
         ready = other.ready;
         blocking = other.blocking;
-        ipAddress = other.ipAddress;
-        port = other.port;
+        localIPAddress = other.localIPAddress;
+        localPort = other.localPort;
+        remoteIPAddress = other.remoteIPAddress;
+        remotePort = other.remotePort;
         readCallback = std::move(other.readCallback);
         closeCallback = std::move(other.closeCallback);
         outData = std::move(other.outData);
@@ -74,8 +84,10 @@ namespace cppsocket
         other.socketFd = INVALID_SOCKET;
         other.ready = false;
         other.blocking = true;
-        other.ipAddress = 0;
-        other.port = 0;
+        other.localIPAddress = 0;
+        other.localPort = 0;
+        other.remoteIPAddress = 0;
+        other.remotePort = 0;
 
         return *this;
     }
@@ -97,8 +109,10 @@ namespace cppsocket
             }
         }
 
-        ipAddress = 0;
-        port = 0;
+        localIPAddress = 0;
+        localPort = 0;
+        remoteIPAddress = 0;
+        remotePort = 0;
         ready = false;
         outData.clear();
 
@@ -180,12 +194,12 @@ namespace cppsocket
             if (result < 0)
             {
                 int error = getLastError();
-                Log(Log::Level::ERR) << "Failed to close socket " << ipToString(ipAddress) << ":" << port << ", error: " << error;
+                Log(Log::Level::ERR) << "Failed to close socket " << ipToString(localIPAddress) << ":" << localPort << ", error: " << error;
                 return false;
             }
             else
             {
-                Log(Log::Level::INFO) << "Socket " << ipToString(ipAddress) << ":" << port << " closed";
+                Log(Log::Level::INFO) << "Socket " << ipToString(localIPAddress) << ":" << localPort << " closed";
             }
         }
 
@@ -255,24 +269,24 @@ namespace cppsocket
 #endif
                 error == EWOULDBLOCK)
             {
-                Log(Log::Level::WARN) << "Nothing to read from socket " << ipToString(ipAddress) << ":" << port;
+                Log(Log::Level::WARN) << "Nothing to read from " << ipToString(remoteIPAddress) << ":" << remotePort;
                 return true;
             }
             else if (error == ECONNRESET)
             {
-                Log(Log::Level::INFO) << "Connection to " << ipToString(ipAddress) << ":" << port << " reset by peer";
+                Log(Log::Level::INFO) << "Connection to " << ipToString(remoteIPAddress) << ":" << remotePort << " reset by peer";
                 disconnected();
                 return false;
             }
             else if (error == ECONNREFUSED)
             {
-                Log(Log::Level::INFO) << "Connection to " << ipToString(ipAddress) << ":" << port << " refused";
+                Log(Log::Level::INFO) << "Connection to " << ipToString(remoteIPAddress) << ":" << remotePort << " refused";
                 disconnected();
                 return false;
             }
             else
             {
-                Log(Log::Level::ERR) << "Failed to read from socket " << ipToString(ipAddress) << ":" << port << ", error: " << error;
+                Log(Log::Level::ERR) << "Failed to read from " << ipToString(remoteIPAddress) << ":" << remotePort << ", error: " << error;
                 disconnected();
                 return false;
             }
@@ -284,7 +298,7 @@ namespace cppsocket
             return true;
         }
 
-        Log(Log::Level::ALL) << "Socket " << ipToString(ipAddress) << ":" << port << " received " << size << " bytes";
+        Log(Log::Level::ALL) << "Socket received " << size << " bytes from " << ipToString(remoteIPAddress) << ":" << remotePort;
 
         inData.assign(TEMP_BUFFER, TEMP_BUFFER + size);
 
@@ -317,35 +331,35 @@ namespace cppsocket
 #endif
                     error == EWOULDBLOCK)
                 {
-                    Log(Log::Level::WARN) << "Can not write to socket " << ipToString(ipAddress) << ":" << port << " now";
+                    Log(Log::Level::WARN) << "Can not write to " << ipToString(remoteIPAddress) << ":" << remotePort << " now";
                     return true;
                 }
                 else if (error == EPIPE)
                 {
-                    Log(Log::Level::ERR) << "Failed to send data to " << ipToString(ipAddress) << ":" << port << ", socket has been shut down";
+                    Log(Log::Level::ERR) << "Failed to send data to " << ipToString(remoteIPAddress) << ":" << remotePort << ", socket has been shut down";
                     disconnected();
                     return false;
                 }
                 else if (error == ECONNRESET)
                 {
-                    Log(Log::Level::INFO) << "Connection to " << ipToString(ipAddress) << ":" << port << " reset by peer";
+                    Log(Log::Level::INFO) << "Connection to " << ipToString(remoteIPAddress) << ":" << remotePort << " reset by peer";
                     disconnected();
                     return false;
                 }
                 else
                 {
-                    Log(Log::Level::ERR) << "Failed to write to socket " << ipToString(ipAddress) << ":" << port << ", error: " << error;
+                    Log(Log::Level::ERR) << "Failed to write to socket " << ipToString(remoteIPAddress) << ":" << remotePort << ", error: " << error;
                     disconnected();
                     return false;
                 }
             }
             else if (size != dataSize)
             {
-                Log(Log::Level::ALL) << "Socket did not send all data to " << ipToString(ipAddress) << ":" << port << ", sent " << size << " out of " << outData.size() << " bytes";
+                Log(Log::Level::ALL) << "Socket did not send all data to " << ipToString(remoteIPAddress) << ":" << remotePort << ", sent " << size << " out of " << outData.size() << " bytes";
             }
             else
             {
-                Log(Log::Level::ALL) << "Socket sent " << size << " bytes to " << ipToString(ipAddress) << ":" << port;
+                Log(Log::Level::ALL) << "Socket sent " << size << " bytes to " << ipToString(remoteIPAddress) << ":" << remotePort;
             }
 
             if (size > 0)
@@ -363,7 +377,7 @@ namespace cppsocket
 
         if (ready)
         {
-            Log(Log::Level::INFO) << "Socket " << ipToString(ipAddress) << ":" << port << " disconnected";
+            Log(Log::Level::INFO) << "Socket disconnected from " << ipToString(remoteIPAddress) << ":" << remotePort << " disconnected";
 
             ready = false;
 
@@ -380,8 +394,10 @@ namespace cppsocket
                 }
             }
 
-            ipAddress = 0;
-            port = 0;
+            localIPAddress = 0;
+            localPort = 0;
+            remoteIPAddress = 0;
+            remotePort = 0;
             ready = false;
             outData.clear();
         }

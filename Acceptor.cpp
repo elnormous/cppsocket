@@ -93,8 +93,8 @@ namespace cppsocket
             return false;
         }
 
-        ipAddress = address;
-        port = newPort;
+        localIPAddress = address;
+        localPort = newPort;
         int value = 1;
 
         if (setsockopt(socketFd, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char*>(&value), sizeof(value)) < 0)
@@ -107,7 +107,7 @@ namespace cppsocket
         sockaddr_in serverAddress;
         memset(&serverAddress, 0, sizeof(serverAddress));
         serverAddress.sin_family = AF_INET;
-        serverAddress.sin_port = htons(port);
+        serverAddress.sin_port = htons(localPort);
         serverAddress.sin_addr.s_addr = address;
 
         if (bind(socketFd, reinterpret_cast<sockaddr*>(&serverAddress), sizeof(serverAddress)) < 0)
@@ -120,11 +120,11 @@ namespace cppsocket
         if (listen(socketFd, WAITING_QUEUE_SIZE) < 0)
         {
             int error = getLastError();
-            Log(Log::Level::ERR) << "Failed to listen on " << ipToString(ipAddress) << ":" << port << ", error: " << error;
+            Log(Log::Level::ERR) << "Failed to listen on " << ipToString(localIPAddress) << ":" << localPort << ", error: " << error;
             return false;
         }
 
-        Log(Log::Level::INFO) << "Server listening on " << ipToString(ipAddress) << ":" << port;
+        Log(Log::Level::INFO) << "Server listening on " << ipToString(localIPAddress) << ":" << localPort;
         ready = true;
 
         return true;
@@ -171,9 +171,12 @@ namespace cppsocket
         }
         else
         {
-            Log(Log::Level::INFO) << "Client connected from " << ipToString(address.sin_addr.s_addr) << ":" << ntohs(address.sin_port) << " to " << ipToString(ipAddress) << ":" << port;
+            Log(Log::Level::INFO) << "Client connected from " << ipToString(address.sin_addr.s_addr) << ":" << ntohs(address.sin_port) << " to " << ipToString(localIPAddress) << ":" << localPort;
 
-            Socket socket(network, clientFd, true, address.sin_addr.s_addr, ntohs(address.sin_port));
+            Socket socket(network, clientFd, true,
+                          localIPAddress, localPort,
+                          address.sin_addr.s_addr,
+                          ntohs(address.sin_port));
 
             if (acceptCallback)
             {

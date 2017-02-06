@@ -74,7 +74,7 @@ namespace cppsocket
 
                 close();
 
-                Log(Log::Level::WARN) << "Failed to connect to " << ipToString(ipAddress) << ":" << port << ", connection timed out";
+                Log(Log::Level::WARN) << "Failed to connect to " << ipToString(remoteIPAddress) << ":" << remotePort << ", connection timed out";
 
                 if (connectErrorCallback)
                 {
@@ -136,16 +136,16 @@ namespace cppsocket
             return false;
         }
 
-        ipAddress = address;
-        port = newPort;
+        remoteIPAddress = address;
+        remotePort = newPort;
 
-        Log(Log::Level::INFO) << "Connecting to " << ipToString(ipAddress) << ":" << static_cast<int>(port);
+        Log(Log::Level::INFO) << "Connecting to " << ipToString(remoteIPAddress) << ":" << static_cast<int>(remotePort);
 
         sockaddr_in addr;
         memset(&addr, 0, sizeof(addr));
         addr.sin_family = AF_INET;
-        addr.sin_port = htons(port);
-        addr.sin_addr.s_addr = ipAddress;
+        addr.sin_addr.s_addr = remoteIPAddress;
+        addr.sin_port = htons(remotePort);
 
         if (::connect(socketFd, reinterpret_cast<const sockaddr*>(&addr), sizeof(addr)) < 0)
         {
@@ -161,7 +161,7 @@ namespace cppsocket
             }
             else
             {
-                Log(Log::Level::WARN) << "Failed to connect to " << ipToString(ipAddress) << ":" << port << ", error: " << error;
+                Log(Log::Level::WARN) << "Failed to connect to " << ipToString(remoteIPAddress) << ":" << remotePort << ", error: " << error;
                 if (connectErrorCallback)
                 {
                     connectErrorCallback(*this);
@@ -173,12 +173,31 @@ namespace cppsocket
         {
             // connected
             ready = true;
-            Log(Log::Level::INFO) << "Socket connected to " << ipToString(ipAddress) << ":" << port;
+            Log(Log::Level::INFO) << "Socket connected to " << ipToString(remoteIPAddress) << ":" << remotePort;
             if (connectCallback)
             {
                 connectCallback(*this);
             }
         }
+
+        struct sockaddr_in localAddr;
+        socklen_t localAddrSize = sizeof(localAddr);
+
+        if (getsockname(socketFd, reinterpret_cast<sockaddr*>(&localAddr), &localAddrSize) != 0)
+        {
+            int error = getLastError();
+            Log(Log::Level::WARN) << "Failed to get address of the socket connecting to " << ipToString(remoteIPAddress) << ":" << remotePort << ", error: " << error;
+            closeSocketFd();
+            connecting = false;
+            if (connectErrorCallback)
+            {
+                connectErrorCallback(*this);
+            }
+            return false;
+        }
+
+        localIPAddress = localAddr.sin_addr.s_addr;
+        localPort = ntohs(localAddr.sin_port);
 
         return true;
     }
@@ -204,7 +223,7 @@ namespace cppsocket
         {
             connecting = false;
             ready = true;
-            Log(Log::Level::INFO) << "Socket connected to " << ipToString(ipAddress) << ":" << port;
+            Log(Log::Level::INFO) << "Socket connected to " << ipToString(remoteIPAddress) << ":" << remotePort;
             if (connectCallback)
             {
                 connectCallback(*this);
@@ -226,7 +245,7 @@ namespace cppsocket
             connecting = false;
             ready = false;
 
-            Log(Log::Level::WARN) << "Failed to connect to " << ipToString(ipAddress) << ":" << port;
+            Log(Log::Level::WARN) << "Failed to connect to " << ipToString(remoteIPAddress) << ":" << remotePort;
 
             if (connectErrorCallback)
             {

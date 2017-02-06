@@ -68,8 +68,11 @@ namespace cppsocket
 
         bool send(std::vector<uint8_t> buffer);
 
-        uint32_t getIPAddress() const { return ipAddress; }
-        uint16_t getPort() const { return port; }
+        uint32_t getLocalIPAddress() const { return localIPAddress; }
+        uint16_t getLocalPort() const { return localPort; }
+
+        uint32_t getRemoteIPAddress() const { return remoteIPAddress; }
+        uint16_t getRemotePort() const { return remotePort; }
 
         bool isBlocking() const { return blocking; }
         bool setBlocking(bool newBlocking);
@@ -79,7 +82,9 @@ namespace cppsocket
         bool hasOutData() const { return !outData.empty(); }
 
     protected:
-        Socket(Network& aNetwork, socket_t aSocketFd, bool aReady, uint32_t aIpAddress, uint16_t aPort);
+        Socket(Network& aNetwork, socket_t aSocketFd, bool aReady,
+               uint32_t aLocalIPAddress, uint16_t aLocalPort,
+               uint32_t aRemoteIPAddress, uint16_t aRemotePort);
 
         virtual bool read();
         virtual bool write();
@@ -100,8 +105,11 @@ namespace cppsocket
         bool ready = false;
         bool blocking = true;
 
-        uint32_t ipAddress = 0;
-        uint16_t port = 0;
+        uint32_t localIPAddress = 0;
+        uint16_t localPort = 0;
+
+        uint32_t remoteIPAddress = 0;
+        uint16_t remotePort = 0;
 
         std::function<void(Socket&, const std::vector<uint8_t>&)> readCallback;
         std::function<void(Socket&)> closeCallback;
