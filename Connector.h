@@ -26,8 +26,8 @@ namespace cppsocket
         bool isConnecting() const { return connecting; }
         void setConnectTimeout(float timeout);
 
-        void setConnectCallback(const std::function<void(Socket&)>& newConnectCallback);
-        void setConnectErrorCallback(const std::function<void(Socket&)>& newConnectErrorCallback);
+        void setConnectCallback(const std::function<void(Connector&)>& newConnectCallback);
+        void setConnectErrorCallback(const std::function<void(Connector&)>& newConnectErrorCallback);
 
     protected:
         virtual bool write() override;
@@ -37,7 +37,7 @@ namespace cppsocket
         float timeSinceConnect = 0.0f;
         bool connecting = false;
 
-        std::function<void(Socket&)> connectCallback;
-        std::function<void(Socket&)> connectErrorCallback;
+        std::function<void(Connector&)> connectCallback;
+        std::function<void(Connector&)> connectErrorCallback;
     };
 }

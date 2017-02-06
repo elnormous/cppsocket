@@ -188,12 +188,12 @@ namespace cppsocket
         connectTimeout = timeout;
     }
 
-    void Connector::setConnectCallback(const std::function<void(Socket&)>& newConnectCallback)
+    void Connector::setConnectCallback(const std::function<void(Connector&)>& newConnectCallback)
     {
         connectCallback = newConnectCallback;
     }
 
-    void Connector::setConnectErrorCallback(const std::function<void(Socket&)>& newConnectErrorCallback)
+    void Connector::setConnectErrorCallback(const std::function<void(Connector&)>& newConnectErrorCallback)
     {
         connectErrorCallback = newConnectErrorCallback;
     }

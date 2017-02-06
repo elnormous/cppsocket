@@ -20,11 +20,11 @@ namespace cppsocket
 
         bool startAccept(const std::string& address, uint16_t newPort = 0);
         bool startAccept(uint32_t address, uint16_t newPort);
-        void setAcceptCallback(const std::function<void(Socket&)>& newAcceptCallback);
+        void setAcceptCallback(const std::function<void(Acceptor&, Socket&)>& newAcceptCallback);
 
     protected:
         virtual bool read();
 
-        std::function<void(Socket&)> acceptCallback;
+        std::function<void(Acceptor&, Socket&)> acceptCallback;
     };
 }

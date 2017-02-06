@@ -40,7 +40,7 @@ int main(int argc, const char* argv[])
         server.setBlocking(false);
         server.startAccept(cppsocket::ANY_ADDRESS, port);
 
-        server.setAcceptCallback([&clientSockets](cppsocket::Socket& c) {
+        server.setAcceptCallback([&clientSockets](cppsocket::Acceptor&, cppsocket::Socket& c) {
             std::cout << "Client connected" << std::endl;
             c.startRead();
             c.send({'t', 'e', 's', 't', '\0'});

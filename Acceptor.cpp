@@ -130,7 +130,7 @@ namespace cppsocket
         return true;
     }
 
-    void Acceptor::setAcceptCallback(const std::function<void(Socket&)>& newAcceptCallback)
+    void Acceptor::setAcceptCallback(const std::function<void(Acceptor&, Socket&)>& newAcceptCallback)
     {
         acceptCallback = newAcceptCallback;
     }
@@ -177,7 +177,7 @@ namespace cppsocket
 
             if (acceptCallback)
             {
-                acceptCallback(socket);
+                acceptCallback(*this, socket);
             }
         }
 
