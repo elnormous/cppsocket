@@ -22,6 +22,7 @@ typedef int socket_t;
 namespace cppsocket
 {
     const uint32_t ANY_ADDRESS = 0;
+    const uint16_t ANY_PORT = 0;
 
     inline std::string ipToString(uint32_t ip)
     {
@@ -50,6 +51,8 @@ namespace cppsocket
         friend Network;
         friend Acceptor;
     public:
+        static std::pair<uint32_t, uint16_t> getAddress(const std::string& address);
+
         Socket(Network& aNetwork);
         virtual ~Socket();
 

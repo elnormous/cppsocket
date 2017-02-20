@@ -84,41 +84,14 @@ namespace cppsocket
         }
     }
 
-    bool Connector::connect(const std::string& address, uint16_t newPort)
+    bool Connector::connect(const std::string& address)
     {
         ready = false;
         connecting = false;
 
-        size_t i = address.find(':');
-        std::string addressStr;
-        std::string portStr;
+        std::pair<uint32_t, uint16_t> addr = getAddress(address);
 
-        if (i != std::string::npos)
-        {
-            addressStr = address.substr(0, i);
-            portStr = address.substr(i + 1);
-        }
-        else
-        {
-            addressStr = address;
-            portStr = std::to_string(newPort);
-        }
-
-        addrinfo* result;
-        if (getaddrinfo(addressStr.c_str(), portStr.empty() ? nullptr : portStr.c_str(), nullptr, &result) != 0)
-        {
-            int error = getLastError();
-            Log(Log::Level::ERR) << "Failed to get address info of " << address << ", error: " << error;
-            return false;
-        }
-
-        struct sockaddr_in* addr = reinterpret_cast<struct sockaddr_in*>(result->ai_addr);
-        uint32_t ip = addr->sin_addr.s_addr;
-        newPort = ntohs(addr->sin_port);
-
-        freeaddrinfo(result);
-
-        return connect(ip, newPort);
+        return connect(addr.first, addr.second);
     }
 
     bool Connector::connect(uint32_t address, uint16_t newPort)

@@ -18,7 +18,7 @@ namespace cppsocket
         Acceptor(Acceptor&& other);
         Acceptor& operator=(Acceptor&& other);
 
-        bool startAccept(const std::string& address, uint16_t newPort = 0);
+        bool startAccept(const std::string& address);
         bool startAccept(uint32_t address, uint16_t newPort);
         void setAcceptCallback(const std::function<void(Acceptor&, Socket&)>& newAcceptCallback);
 

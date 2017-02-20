@@ -3,6 +3,8 @@
 //
 
 #ifdef _MSC_VER
+#define NOMINMAX
+#include <winsock2.h>
 #include <ws2tcpip.h>
 #else
 #include <sys/socket.h>
@@ -17,6 +19,41 @@
 namespace cppsocket
 {
     static uint8_t TEMP_BUFFER[65536];
+
+    std::pair<uint32_t, uint16_t> Socket::getAddress(const std::string& address)
+    {
+        std::pair<uint32_t, uint16_t> result(ANY_ADDRESS, ANY_PORT);
+
+        size_t i = address.find(':');
+        std::string addressStr;
+        std::string portStr;
+
+        if (i != std::string::npos)
+        {
+            addressStr = address.substr(0, i);
+            portStr = address.substr(i + 1);
+        }
+        else
+        {
+            addressStr = address;
+        }
+
+        addrinfo* info;
+        if (getaddrinfo(addressStr.c_str(), portStr.empty() ? nullptr : portStr.c_str(), nullptr, &info) != 0)
+        {
+            int error = getLastError();
+            Log(Log::Level::ERR) << "Failed to get address info of " << address << ", error: " << error;
+            return result;
+        }
+
+        struct sockaddr_in* addr = reinterpret_cast<struct sockaddr_in*>(info->ai_addr);
+        result.first = addr->sin_addr.s_addr;
+        result.second = ntohs(addr->sin_port);
+
+        freeaddrinfo(info);
+
+        return result;
+    }
 
     Socket::Socket(Network& aNetwork):
         network(aNetwork)

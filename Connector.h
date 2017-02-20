@@ -20,7 +20,7 @@ namespace cppsocket
         virtual bool close() override;
         virtual void update(float delta) override;
 
-        bool connect(const std::string& address, uint16_t newPort = 0);
+        bool connect(const std::string& address);
         bool connect(uint32_t address, uint16_t newPort);
 
         bool isConnecting() const { return connecting; }
