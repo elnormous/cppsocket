@@ -9,9 +9,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\Acceptor.cpp">
-      <Filter>cppsocket</Filter>
-    </ClCompile>
     <ClCompile Include="..\Network.cpp">
       <Filter>cppsocket</Filter>
     </ClCompile>
@@ -26,9 +23,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\Acceptor.h">
-      <Filter>cppsocket</Filter>
-    </ClInclude>
     <ClInclude Include="..\Network.h">
       <Filter>cppsocket</Filter>
     </ClInclude>
