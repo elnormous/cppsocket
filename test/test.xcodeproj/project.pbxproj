@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		30513E4E1D390DCB00F9B4BA /* Acceptor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30513E461D390DCB00F9B4BA /* Acceptor.cpp */; };
-		30513E4F1D390DCB00F9B4BA /* Connector.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30513E481D390DCB00F9B4BA /* Connector.cpp */; };
 		30513E501D390DCB00F9B4BA /* Network.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30513E4A1D390DCB00F9B4BA /* Network.cpp */; };
 		30513E511D390DCB00F9B4BA /* Socket.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30513E4C1D390DCB00F9B4BA /* Socket.cpp */; };
 		30513E531D390DE600F9B4BA /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30513E521D390DE600F9B4BA /* main.cpp */; };
@@ -31,8 +30,6 @@
 		300934091C873DF200CC50D3 /* test */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = test; sourceTree = BUILT_PRODUCTS_DIR; };
 		30513E461D390DCB00F9B4BA /* Acceptor.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Acceptor.cpp; sourceTree = "<group>"; };
 		30513E471D390DCB00F9B4BA /* Acceptor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Acceptor.h; sourceTree = "<group>"; };
-		30513E481D390DCB00F9B4BA /* Connector.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Connector.cpp; sourceTree = "<group>"; };
-		30513E491D390DCB00F9B4BA /* Connector.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Connector.h; sourceTree = "<group>"; };
 		30513E4A1D390DCB00F9B4BA /* Network.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Network.cpp; sourceTree = "<group>"; };
 		30513E4B1D390DCB00F9B4BA /* Network.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Network.h; sourceTree = "<group>"; };
 		30513E4C1D390DCB00F9B4BA /* Socket.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Socket.cpp; sourceTree = "<group>"; };
@@ -83,8 +80,6 @@
 			children = (
 				30513E461D390DCB00F9B4BA /* Acceptor.cpp */,
 				30513E471D390DCB00F9B4BA /* Acceptor.h */,
-				30513E481D390DCB00F9B4BA /* Connector.cpp */,
-				30513E491D390DCB00F9B4BA /* Connector.h */,
 				30B2ECF11DAE830F00DA5160 /* Log.cpp */,
 				30B2ECEF1DAE826C00DA5160 /* Log.h */,
 				30513E4A1D390DCB00F9B4BA /* Network.cpp */,
@@ -157,7 +152,6 @@
 				30513E501D390DCB00F9B4BA /* Network.cpp in Sources */,
 				30513E511D390DCB00F9B4BA /* Socket.cpp in Sources */,
 				30513E531D390DE600F9B4BA /* main.cpp in Sources */,
-				30513E4F1D390DCB00F9B4BA /* Connector.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

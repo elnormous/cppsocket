@@ -26,5 +26,7 @@ namespace cppsocket
         virtual bool read();
 
         std::function<void(Acceptor&, Socket&)> acceptCallback;
+
+        bool accepting = false;
     };
 }

@@ -88,6 +88,11 @@ namespace cppsocket
         localPort(other.localPort),
         remoteIPAddress(other.remoteIPAddress),
         remotePort(other.remotePort),
+        connectTimeout(other.connectTimeout),
+        timeSinceConnect(other.timeSinceConnect),
+        connecting(other.connecting),
+        connectCallback(std::move(other.connectCallback)),
+        connectErrorCallback(std::move(other.connectErrorCallback)),
         readCallback(std::move(other.readCallback)),
         closeCallback(std::move(other.closeCallback)),
         outData(std::move(other.outData))
@@ -101,6 +106,9 @@ namespace cppsocket
         other.localPort = 0;
         other.remoteIPAddress = 0;
         other.remotePort = 0;
+        other.connecting = false;
+        other.connectTimeout = 10.0f;
+        other.timeSinceConnect = 0.0f;
     }
 
     Socket& Socket::operator=(Socket&& other)
@@ -114,6 +122,11 @@ namespace cppsocket
         localPort = other.localPort;
         remoteIPAddress = other.remoteIPAddress;
         remotePort = other.remotePort;
+        connectTimeout = other.connectTimeout;
+        timeSinceConnect = other.timeSinceConnect;
+        connecting = other.connecting;
+        connectCallback = std::move(other.connectCallback);
+        connectErrorCallback = std::move(other.connectErrorCallback);
         readCallback = std::move(other.readCallback);
         closeCallback = std::move(other.closeCallback);
         outData = std::move(other.outData);
@@ -125,6 +138,9 @@ namespace cppsocket
         other.localPort = 0;
         other.remoteIPAddress = 0;
         other.remotePort = 0;
+        other.connecting = false;
+        other.connectTimeout = 10.0f;
+        other.timeSinceConnect = 0.0f;
 
         return *this;
     }
@@ -151,13 +167,32 @@ namespace cppsocket
         remoteIPAddress = 0;
         remotePort = 0;
         ready = false;
+        connecting = false;
         outData.clear();
 
         return result;
     }
 
-    void Socket::update(float)
+    void Socket::update(float delta)
     {
+        if (connecting)
+        {
+            timeSinceConnect += delta;
+
+            if (timeSinceConnect > connectTimeout)
+            {
+                connecting = false;
+
+                close();
+
+                Log(Log::Level::WARN) << "Failed to connect to " << ipToString(remoteIPAddress) << ":" << remotePort << ", connection timed out";
+
+                if (connectErrorCallback)
+                {
+                    connectErrorCallback(*this);
+                }
+            }
+        }
     }
 
     bool Socket::startRead()
@@ -171,6 +206,112 @@ namespace cppsocket
         ready = true;
 
         return true;
+    }
+
+    bool Socket::connect(const std::string& address)
+    {
+        ready = false;
+        connecting = false;
+
+        std::pair<uint32_t, uint16_t> addr = getAddress(address);
+
+        return connect(addr.first, addr.second);
+    }
+
+    bool Socket::connect(uint32_t address, uint16_t newPort)
+    {
+        ready = false;
+        connecting = false;
+
+        if (socketFd != INVALID_SOCKET)
+        {
+            close();
+        }
+
+        if (!createSocketFd())
+        {
+            return false;
+        }
+
+        remoteIPAddress = address;
+        remotePort = newPort;
+
+        Log(Log::Level::INFO) << "Connecting to " << ipToString(remoteIPAddress) << ":" << static_cast<int>(remotePort);
+
+        sockaddr_in addr;
+        memset(&addr, 0, sizeof(addr));
+        addr.sin_family = AF_INET;
+        addr.sin_addr.s_addr = remoteIPAddress;
+        addr.sin_port = htons(remotePort);
+
+        if (::connect(socketFd, reinterpret_cast<const sockaddr*>(&addr), sizeof(addr)) < 0)
+        {
+            int error = getLastError();
+
+#ifdef _MSC_VER
+            if (error == WSAEWOULDBLOCK)
+#else
+                if (error == EINPROGRESS)
+#endif
+                {
+                    connecting = true;
+                }
+                else
+                {
+                    Log(Log::Level::WARN) << "Failed to connect to " << ipToString(remoteIPAddress) << ":" << remotePort << ", error: " << error;
+                    if (connectErrorCallback)
+                    {
+                        connectErrorCallback(*this);
+                    }
+                    return false;
+                }
+        }
+        else
+        {
+            // connected
+            ready = true;
+            Log(Log::Level::INFO) << "Socket connected to " << ipToString(remoteIPAddress) << ":" << remotePort;
+            if (connectCallback)
+            {
+                connectCallback(*this);
+            }
+        }
+
+        struct sockaddr_in localAddr;
+        socklen_t localAddrSize = sizeof(localAddr);
+
+        if (getsockname(socketFd, reinterpret_cast<sockaddr*>(&localAddr), &localAddrSize) != 0)
+        {
+            int error = getLastError();
+            Log(Log::Level::WARN) << "Failed to get address of the socket connecting to " << ipToString(remoteIPAddress) << ":" << remotePort << ", error: " << error;
+            closeSocketFd();
+            connecting = false;
+            if (connectErrorCallback)
+            {
+                connectErrorCallback(*this);
+            }
+            return false;
+        }
+
+        localIPAddress = localAddr.sin_addr.s_addr;
+        localPort = ntohs(localAddr.sin_port);
+
+        return true;
+    }
+
+    void Socket::setConnectTimeout(float timeout)
+    {
+        connectTimeout = timeout;
+    }
+
+    void Socket::setConnectCallback(const std::function<void(Socket&)>& newConnectCallback)
+    {
+        connectCallback = newConnectCallback;
+    }
+
+    void Socket::setConnectErrorCallback(const std::function<void(Socket&)>& newConnectErrorCallback)
+    {
+        connectErrorCallback = newConnectErrorCallback;
     }
 
     void Socket::setReadCallback(const std::function<void(Socket&, const std::vector<uint8_t>&)>& newReadCallback)
@@ -289,6 +430,17 @@ namespace cppsocket
 
     bool Socket::write()
     {
+        if (connecting)
+        {
+            connecting = false;
+            ready = true;
+            Log(Log::Level::INFO) << "Socket connected to " << ipToString(remoteIPAddress) << ":" << remotePort;
+            if (connectCallback)
+            {
+                connectCallback(*this);
+            }
+        }
+
         return writeData();
     }
 
@@ -412,16 +564,12 @@ namespace cppsocket
     {
         bool result = true;
 
-        if (ready)
+        if (connecting)
         {
-            Log(Log::Level::INFO) << "Socket disconnected from " << ipToString(remoteIPAddress) << ":" << remotePort << " disconnected";
-
+            connecting = false;
             ready = false;
 
-            if (closeCallback)
-            {
-                closeCallback(*this);
-            }
+            Log(Log::Level::WARN) << "Failed to connect to " << ipToString(remoteIPAddress) << ":" << remotePort;
 
             if (socketFd != INVALID_SOCKET)
             {
@@ -431,12 +579,39 @@ namespace cppsocket
                 }
             }
 
-            localIPAddress = 0;
-            localPort = 0;
-            remoteIPAddress = 0;
-            remotePort = 0;
-            ready = false;
-            outData.clear();
+            if (connectErrorCallback)
+            {
+                connectErrorCallback(*this);
+            }
+        }
+        else
+        {
+            if (ready)
+            {
+                Log(Log::Level::INFO) << "Socket disconnected from " << ipToString(remoteIPAddress) << ":" << remotePort << " disconnected";
+
+                ready = false;
+
+                if (closeCallback)
+                {
+                    closeCallback(*this);
+                }
+
+                if (socketFd != INVALID_SOCKET)
+                {
+                    if (!closeSocketFd())
+                    {
+                        result = false;
+                    }
+                }
+
+                localIPAddress = 0;
+                localPort = 0;
+                remoteIPAddress = 0;
+                remotePort = 0;
+                ready = false;
+                outData.clear();
+            }
         }
 
         return result;

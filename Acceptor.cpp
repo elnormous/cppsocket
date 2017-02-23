@@ -98,6 +98,8 @@ namespace cppsocket
         }
 
         Log(Log::Level::INFO) << "Server listening on " << ipToString(localIPAddress) << ":" << localPort;
+
+        accepting = true;
         ready = true;
 
         return true;

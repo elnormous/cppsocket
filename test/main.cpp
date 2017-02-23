@@ -8,7 +8,6 @@
 #include <sstream>
 #include "Network.h"
 #include "Acceptor.h"
-#include "Connector.h"
 
 static void printUsage(const std::string& executable)
 {
@@ -28,7 +27,7 @@ int main(int argc, const char* argv[])
 
     cppsocket::Network network;
     cppsocket::Acceptor server(network);
-    cppsocket::Connector client(network);
+    cppsocket::Socket client(network);
     std::vector<cppsocket::Socket> clientSockets;
 
     if (type == "server")
