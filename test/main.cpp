@@ -7,7 +7,6 @@
 #include <thread>
 #include <sstream>
 #include "Network.h"
-#include "Acceptor.h"
 
 static void printUsage(const std::string& executable)
 {
@@ -26,7 +25,7 @@ int main(int argc, const char* argv[])
     std::string address = argv[2];
 
     cppsocket::Network network;
-    cppsocket::Acceptor server(network);
+    cppsocket::Socket server(network);
     cppsocket::Socket client(network);
     std::vector<cppsocket::Socket> clientSockets;
 
@@ -39,7 +38,7 @@ int main(int argc, const char* argv[])
         server.setBlocking(false);
         server.startAccept(cppsocket::ANY_ADDRESS, port);
 
-        server.setAcceptCallback([&clientSockets](cppsocket::Acceptor&, cppsocket::Socket& c) {
+        server.setAcceptCallback([&clientSockets](cppsocket::Socket&, cppsocket::Socket& c) {
             std::cout << "Client connected" << std::endl;
             c.startRead();
             c.send({'t', 'e', 's', 't', '\0'});

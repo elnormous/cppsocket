@@ -44,12 +44,10 @@ namespace cppsocket
     }
 
     class Network;
-    class Acceptor;
 
     class Socket
     {
         friend Network;
-        friend Acceptor;
     public:
         static std::pair<uint32_t, uint16_t> getAddress(const std::string& address);
 
@@ -66,16 +64,21 @@ namespace cppsocket
         virtual void update(float delta);
 
         bool startRead();
+
+        bool startAccept(const std::string& address);
+        bool startAccept(uint32_t address, uint16_t newPort);
+
         bool connect(const std::string& address);
         bool connect(uint32_t address, uint16_t newPort);
 
         bool isConnecting() const { return connecting; }
         void setConnectTimeout(float timeout);
 
-        void setConnectCallback(const std::function<void(Socket&)>& newConnectCallback);
-        void setConnectErrorCallback(const std::function<void(Socket&)>& newConnectErrorCallback);
         void setReadCallback(const std::function<void(Socket&, const std::vector<uint8_t>&)>& newReadCallback);
         void setCloseCallback(const std::function<void(Socket&)>& newCloseCallback);
+        void setAcceptCallback(const std::function<void(Socket&, Socket&)>& newAcceptCallback);
+        void setConnectCallback(const std::function<void(Socket&)>& newConnectCallback);
+        void setConnectErrorCallback(const std::function<void(Socket&)>& newConnectErrorCallback);
 
         bool send(std::vector<uint8_t> buffer);
 
@@ -124,12 +127,15 @@ namespace cppsocket
 
         float connectTimeout = 10.0f;
         float timeSinceConnect = 0.0f;
+        bool accepting = false;
         bool connecting = false;
 
-        std::function<void(Socket&)> connectCallback;
-        std::function<void(Socket&)> connectErrorCallback;
         std::function<void(Socket&, const std::vector<uint8_t>&)> readCallback;
         std::function<void(Socket&)> closeCallback;
+        std::function<void(Socket&, Socket&)> acceptCallback;
+        std::function<void(Socket&)> connectCallback;
+        std::function<void(Socket&)> connectErrorCallback;
+
 
         std::vector<uint8_t> inData;
         std::vector<uint8_t> outData;

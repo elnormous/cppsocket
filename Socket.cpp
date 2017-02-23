@@ -18,6 +18,7 @@
 
 namespace cppsocket
 {
+    static const int WAITING_QUEUE_SIZE = 5;
     static uint8_t TEMP_BUFFER[65536];
 
     std::pair<uint32_t, uint16_t> Socket::getAddress(const std::string& address)
@@ -90,11 +91,13 @@ namespace cppsocket
         remotePort(other.remotePort),
         connectTimeout(other.connectTimeout),
         timeSinceConnect(other.timeSinceConnect),
+        accepting(other.accepting),
         connecting(other.connecting),
-        connectCallback(std::move(other.connectCallback)),
-        connectErrorCallback(std::move(other.connectErrorCallback)),
         readCallback(std::move(other.readCallback)),
         closeCallback(std::move(other.closeCallback)),
+        acceptCallback(std::move(other.acceptCallback)),
+        connectCallback(std::move(other.connectCallback)),
+        connectErrorCallback(std::move(other.connectErrorCallback)),
         outData(std::move(other.outData))
     {
         network.addSocket(*this);
@@ -124,11 +127,13 @@ namespace cppsocket
         remotePort = other.remotePort;
         connectTimeout = other.connectTimeout;
         timeSinceConnect = other.timeSinceConnect;
+        accepting = other.accepting;
         connecting = other.connecting;
-        connectCallback = std::move(other.connectCallback);
-        connectErrorCallback = std::move(other.connectErrorCallback);
         readCallback = std::move(other.readCallback);
         closeCallback = std::move(other.closeCallback);
+        acceptCallback = std::move(other.acceptCallback);
+        connectCallback = std::move(other.connectCallback);
+        connectErrorCallback = std::move(other.connectErrorCallback);
         outData = std::move(other.outData);
 
         other.socketFd = INVALID_SOCKET;
@@ -138,6 +143,7 @@ namespace cppsocket
         other.localPort = 0;
         other.remoteIPAddress = 0;
         other.remotePort = 0;
+        other.accepting = false;
         other.connecting = false;
         other.connectTimeout = 10.0f;
         other.timeSinceConnect = 0.0f;
@@ -205,6 +211,68 @@ namespace cppsocket
 
         ready = true;
 
+        return true;
+    }
+
+    bool Socket::startAccept(const std::string& address)
+    {
+        ready = false;
+
+        std::pair<uint32_t, uint16_t> addr = getAddress(address);
+
+        return startAccept(addr.first, addr.second);
+    }
+
+    bool Socket::startAccept(uint32_t address, uint16_t newPort)
+    {
+        ready = false;
+
+        if (socketFd != INVALID_SOCKET)
+        {
+            close();
+        }
+
+        if (!createSocketFd())
+        {
+            return false;
+        }
+
+        localIPAddress = address;
+        localPort = newPort;
+        int value = 1;
+
+        if (setsockopt(socketFd, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char*>(&value), sizeof(value)) < 0)
+        {
+            int error = getLastError();
+            Log(Log::Level::ERR) << "setsockopt(SO_REUSEADDR) failed, error: " << error;
+            return false;
+        }
+
+        sockaddr_in serverAddress;
+        memset(&serverAddress, 0, sizeof(serverAddress));
+        serverAddress.sin_family = AF_INET;
+        serverAddress.sin_port = htons(localPort);
+        serverAddress.sin_addr.s_addr = address;
+
+        if (bind(socketFd, reinterpret_cast<sockaddr*>(&serverAddress), sizeof(serverAddress)) < 0)
+        {
+            int error = getLastError();
+            Log(Log::Level::ERR) << "Failed to bind server socket, error: " << error;
+            return false;
+        }
+
+        if (listen(socketFd, WAITING_QUEUE_SIZE) < 0)
+        {
+            int error = getLastError();
+            Log(Log::Level::ERR) << "Failed to listen on " << ipToString(localIPAddress) << ":" << localPort << ", error: " << error;
+            return false;
+        }
+
+        Log(Log::Level::INFO) << "Server listening on " << ipToString(localIPAddress) << ":" << localPort;
+        
+        accepting = true;
+        ready = true;
+        
         return true;
     }
 
@@ -304,16 +372,6 @@ namespace cppsocket
         connectTimeout = timeout;
     }
 
-    void Socket::setConnectCallback(const std::function<void(Socket&)>& newConnectCallback)
-    {
-        connectCallback = newConnectCallback;
-    }
-
-    void Socket::setConnectErrorCallback(const std::function<void(Socket&)>& newConnectErrorCallback)
-    {
-        connectErrorCallback = newConnectErrorCallback;
-    }
-
     void Socket::setReadCallback(const std::function<void(Socket&, const std::vector<uint8_t>&)>& newReadCallback)
     {
         readCallback = newReadCallback;
@@ -322,6 +380,21 @@ namespace cppsocket
     void Socket::setCloseCallback(const std::function<void(Socket&)>& newCloseCallback)
     {
         closeCallback = newCloseCallback;
+    }
+
+    void Socket::setAcceptCallback(const std::function<void(Socket&, Socket&)>& newAcceptCallback)
+    {
+        acceptCallback = newAcceptCallback;
+    }
+
+    void Socket::setConnectCallback(const std::function<void(Socket&)>& newConnectCallback)
+    {
+        connectCallback = newConnectCallback;
+    }
+
+    void Socket::setConnectErrorCallback(const std::function<void(Socket&)>& newConnectErrorCallback)
+    {
+        connectErrorCallback = newConnectErrorCallback;
     }
 
     bool Socket::setBlocking(bool newBlocking)
@@ -425,7 +498,56 @@ namespace cppsocket
 
     bool Socket::read()
     {
-        return readData();
+        if (accepting)
+        {
+            sockaddr_in address;
+#ifdef _MSC_VER
+            int addressLength = static_cast<int>(sizeof(address));
+#else
+            socklen_t addressLength = sizeof(address);
+#endif
+
+            socket_t clientFd = ::accept(socketFd, reinterpret_cast<sockaddr*>(&address), &addressLength);
+
+            if (clientFd == INVALID_SOCKET)
+            {
+                int error = getLastError();
+
+                if (error == EAGAIN ||
+#ifdef _MSC_VER
+                    error == WSAEWOULDBLOCK ||
+#endif
+                    error == EWOULDBLOCK)
+                {
+                    Log(Log::Level::ERR) << "No sockets to accept";
+                }
+                else
+                {
+                    Log(Log::Level::ERR) << "Failed to accept client, error: " << error;
+                    return false;
+                }
+            }
+            else
+            {
+                Log(Log::Level::INFO) << "Client connected from " << ipToString(address.sin_addr.s_addr) << ":" << ntohs(address.sin_port) << " to " << ipToString(localIPAddress) << ":" << localPort;
+
+                Socket socket(network, clientFd, true,
+                              localIPAddress, localPort,
+                              address.sin_addr.s_addr,
+                              ntohs(address.sin_port));
+                
+                if (acceptCallback)
+                {
+                    acceptCallback(*this, socket);
+                }
+            }
+        }
+        else
+        {
+            return readData();
+        }
+
+        return true;
     }
 
     bool Socket::write()
