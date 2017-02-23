@@ -20,7 +20,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\Acceptor.cpp" />
-    <ClCompile Include="..\Connector.cpp" />
     <ClCompile Include="..\Log.cpp" />
     <ClCompile Include="..\Network.cpp" />
     <ClCompile Include="..\Socket.cpp" />
@@ -28,7 +27,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Acceptor.h" />
-    <ClInclude Include="..\Connector.h" />
     <ClInclude Include="..\Log.h" />
     <ClInclude Include="..\Network.h" />
     <ClInclude Include="..\Socket.h" />
