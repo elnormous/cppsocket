@@ -173,6 +173,7 @@ namespace cppsocket
         remoteIPAddress = 0;
         remotePort = 0;
         ready = false;
+        accepting = false;
         connecting = false;
         outData.clear();
 
