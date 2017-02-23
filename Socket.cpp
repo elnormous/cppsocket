@@ -11,6 +11,7 @@
 #include <netdb.h>
 #include <unistd.h>
 #endif
+#include <cstring>
 #include <fcntl.h>
 #include "Log.h"
 #include "Socket.h"
