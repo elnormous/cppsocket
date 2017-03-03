@@ -7,3 +7,4 @@ test/test.opensdf
 test/test.sdf
 *.opendb
 *.db
+*.o
