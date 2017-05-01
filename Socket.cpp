@@ -570,7 +570,15 @@ namespace cppsocket
 
     bool Socket::readData()
     {
-        int size = static_cast<int>(recv(socketFd, reinterpret_cast<char*>(TEMP_BUFFER), sizeof(TEMP_BUFFER), 0));
+#if defined(__APPLE__)
+        int flags = SO_NOSIGPIPE;
+#elif defined(_MSC_VER)
+        int flags = 0;
+#else
+        int flags = MSG_NOSIGNAL;
+#endif
+
+        int size = static_cast<int>(recv(socketFd, reinterpret_cast<char*>(TEMP_BUFFER), sizeof(TEMP_BUFFER), flags));
 
         if (size < 0)
         {
@@ -627,12 +635,20 @@ namespace cppsocket
     {
         if (ready && !outData.empty())
         {
+#if defined(__APPLE__)
+            int flags = SO_NOSIGPIPE;
+#elif defined(_MSC_VER)
+            int flags = 0;
+#else
+            int flags = MSG_NOSIGNAL;
+#endif
+
 #ifdef _MSC_VER
             int dataSize = static_cast<int>(outData.size());
-            int size = ::send(socketFd, reinterpret_cast<const char*>(outData.data()), dataSize, 0);
+            int size = ::send(socketFd, reinterpret_cast<const char*>(outData.data()), dataSize, flags);
 #else
             ssize_t dataSize = static_cast<ssize_t>(outData.size());
-            ssize_t size = ::send(socketFd, reinterpret_cast<const char*>(outData.data()), outData.size(), 0);
+            ssize_t size = ::send(socketFd, reinterpret_cast<const char*>(outData.data()), outData.size(), flags);
 #endif
 
             if (size < 0)
