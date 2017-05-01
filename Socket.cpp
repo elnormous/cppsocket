@@ -430,6 +430,16 @@ namespace cppsocket
             }
         }
 
+#ifdef __APPLE__
+        int set = 1;
+        if (setsockopt(socketFd, SOL_SOCKET, SO_NOSIGPIPE, &set, sizeof(int)) != 0)
+        {
+            int error = getLastError();
+            Log(Log::Level::ERR) << "Failed to set socket option, error: " << error;
+            return false;
+        }
+#endif
+
         return true;
     }
 
@@ -571,7 +581,7 @@ namespace cppsocket
     bool Socket::readData()
     {
 #if defined(__APPLE__)
-        int flags = SO_NOSIGPIPE;
+        int flags = 0;
 #elif defined(_MSC_VER)
         int flags = 0;
 #else
@@ -636,7 +646,7 @@ namespace cppsocket
         if (ready && !outData.empty())
         {
 #if defined(__APPLE__)
-            int flags = SO_NOSIGPIPE;
+            int flags = 0;
 #elif defined(_MSC_VER)
             int flags = 0;
 #else
