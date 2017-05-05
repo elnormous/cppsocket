@@ -117,17 +117,22 @@ namespace cppsocket
                 {
                     Socket* socket = *iter;
 
-                    if (pollFd.revents & POLLIN)
-                    {
-                        socket->read();
-                    }
+                    auto i = std::find(socketDeleteSet.begin(), socketDeleteSet.end(), socket);
 
-                    if (pollFd.revents & POLLOUT)
+                    if (i == socketDeleteSet.end())
                     {
-                        socket->write();
-                    }
+                        if (pollFd.revents & POLLIN)
+                        {
+                            socket->read();
+                        }
 
-                    socket->update(delta);
+                        if (pollFd.revents & POLLOUT)
+                        {
+                            socket->write();
+                        }
+
+                        socket->update(delta);
+                    }
                 }
             }
         }
