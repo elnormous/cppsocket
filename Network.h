@@ -9,6 +9,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <set>
 #include <chrono>
 #include "Socket.h"
 
@@ -33,6 +34,8 @@ namespace cppsocket
         void removeSocket(Socket& socket);
 
         std::vector<Socket*> sockets;
+        std::set<Socket*> socketAddSet;
+        std::set<Socket*> socketDeleteSet;
 
         std::chrono::steady_clock::time_point previousTime;
     };

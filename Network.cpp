@@ -49,6 +49,30 @@ namespace cppsocket
 
     bool Network::update()
     {
+        for (Socket* socket : socketDeleteSet)
+        {
+            auto i = std::find(sockets.begin(), sockets.end(), socket);
+
+            if (i != sockets.end())
+            {
+                sockets.erase(i);
+            }
+        }
+
+        socketDeleteSet.clear();
+
+        for (Socket* socket : socketAddSet)
+        {
+            auto i = std::find(sockets.begin(), sockets.end(), socket);
+
+            if (i == sockets.end())
+            {
+                sockets.push_back(socket);
+            }
+        }
+
+        socketAddSet.clear();
+
         auto currentTime = std::chrono::steady_clock::now();
         auto diff = std::chrono::duration_cast<std::chrono::microseconds>(currentTime - previousTime);
 
@@ -113,16 +137,25 @@ namespace cppsocket
 
     void Network::addSocket(Socket& socket)
     {
-        sockets.push_back(&socket);
+        socketAddSet.insert(&socket);
+
+        auto setIterator = socketDeleteSet.find(&socket);
+
+        if (setIterator != socketDeleteSet.end())
+        {
+            socketDeleteSet.erase(setIterator);
+        }
     }
 
     void Network::removeSocket(Socket& socket)
     {
-        auto vectorIterator = std::find(sockets.begin(), sockets.end(), &socket);
+        socketDeleteSet.insert(&socket);
 
-        if (vectorIterator != sockets.end())
+        auto setIterator = socketAddSet.find(&socket);
+
+        if (setIterator != socketAddSet.end())
         {
-            sockets.erase(vectorIterator);
+            socketAddSet.erase(setIterator);
         }
     }
 }

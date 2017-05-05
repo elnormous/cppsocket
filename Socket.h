@@ -136,7 +136,6 @@ namespace cppsocket
         std::function<void(Socket&)> connectCallback;
         std::function<void(Socket&)> connectErrorCallback;
 
-
         std::vector<uint8_t> inData;
         std::vector<uint8_t> outData;
     };
