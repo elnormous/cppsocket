@@ -83,7 +83,7 @@ namespace cppsocket
             return false;
         }
 
-        struct sockaddr_in* addr = reinterpret_cast<struct sockaddr_in*>(info->ai_addr);
+        sockaddr_in* addr = reinterpret_cast<sockaddr_in*>(info->ai_addr);
         result.first = addr->sin_addr.s_addr;
         result.second = ntohs(addr->sin_port);
 
@@ -391,7 +391,7 @@ namespace cppsocket
             }
         }
 
-        struct sockaddr_in localAddr;
+        sockaddr_in localAddr;
         socklen_t localAddrSize = sizeof(localAddr);
 
         if (getsockname(socketFd, reinterpret_cast<sockaddr*>(&localAddr), &localAddrSize) != 0)
