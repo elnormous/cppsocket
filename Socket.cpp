@@ -641,7 +641,11 @@ namespace cppsocket
         int flags = MSG_NOSIGNAL;
 #endif
 
-        int size = static_cast<int>(recv(socketFd, reinterpret_cast<char*>(TEMP_BUFFER), sizeof(TEMP_BUFFER), flags));
+#ifdef _MSC_VER
+        int size = recv(socketFd, reinterpret_cast<char*>(TEMP_BUFFER), sizeof(TEMP_BUFFER), flags);
+#else
+        ssize_t size = recv(socketFd, reinterpret_cast<char*>(TEMP_BUFFER), sizeof(TEMP_BUFFER), flags);
+#endif
 
         if (size < 0)
         {
