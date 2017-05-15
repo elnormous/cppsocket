@@ -20,30 +20,6 @@ namespace cppsocket
 {
     Network::Network()
     {
-#ifdef _MSC_VER
-        static bool ready = false;
-        if (!ready)
-        {
-            WORD sockVersion = MAKEWORD(2, 2);
-            WSADATA wsaData;
-            int error = WSAStartup(sockVersion, &wsaData);
-            if (error != 0)
-            {
-                Log(Log::Level::ERR) << "WSAStartup failed, error: " << error;
-                return;
-            }
-
-            if (LOBYTE(wsaData.wVersion) != 2 || HIBYTE(wsaData.wVersion) != 2)
-            {
-                Log(Log::Level::ERR) << "Incorrect Winsock version";
-                WSACleanup();
-                return;
-            }
-
-            ready = true;
-        }
-#endif
-
         previousTime = std::chrono::steady_clock::now();
     }
 

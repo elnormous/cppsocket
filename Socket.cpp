@@ -415,6 +415,29 @@ namespace cppsocket
     {
         socketFd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
+#ifdef _MSC_VER
+        if (socketFd == INVALID_SOCKET && WSAGetLastError() == WSANOTINITIALISED)
+        {
+            WORD sockVersion = MAKEWORD(2, 2);
+            WSADATA wsaData;
+            int error = WSAStartup(sockVersion, &wsaData);
+            if (error != 0)
+            {
+                Log(Log::Level::ERR) << "WSAStartup failed, error: " << error;
+                return false;
+            }
+
+            if (wsaData.wVersion != sockVersion)
+            {
+                Log(Log::Level::ERR) << "Incorrect Winsock version";
+                WSACleanup();
+                return false;
+            }
+
+            socket_t socketFd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+        }
+#endif
+
         if (socketFd == INVALID_SOCKET)
         {
             int error = getLastError();
