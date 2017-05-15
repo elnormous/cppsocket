@@ -434,7 +434,7 @@ namespace cppsocket
                 return false;
             }
 
-            socket_t socketFd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+            socketFd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
         }
 #endif
 
