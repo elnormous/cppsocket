@@ -49,7 +49,7 @@ namespace cppsocket
     {
         friend Network;
     public:
-        static std::pair<uint32_t, uint16_t> getAddress(const std::string& address);
+        static bool getAddress(const std::string& address, std::pair<uint32_t, uint16_t>& result);
 
         Socket(Network& aNetwork);
         virtual ~Socket();

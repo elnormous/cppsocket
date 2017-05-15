@@ -22,9 +22,10 @@ namespace cppsocket
     static const int WAITING_QUEUE_SIZE = 5;
     static uint8_t TEMP_BUFFER[65536];
 
-    std::pair<uint32_t, uint16_t> Socket::getAddress(const std::string& address)
+    bool Socket::getAddress(const std::string& address, std::pair<uint32_t, uint16_t>& result)
     {
-        std::pair<uint32_t, uint16_t> result(ANY_ADDRESS, ANY_PORT);
+        result.first = ANY_ADDRESS;
+        result.second = ANY_PORT;
 
         size_t i = address.find(':');
         std::string addressStr;
@@ -41,11 +42,36 @@ namespace cppsocket
         }
 
         addrinfo* info;
-        if (getaddrinfo(addressStr.c_str(), portStr.empty() ? nullptr : portStr.c_str(), nullptr, &info) != 0)
+        int ret = getaddrinfo(addressStr.c_str(), portStr.empty() ? nullptr : portStr.c_str(), nullptr, &info);
+
+#ifdef _MSC_VER
+        if (ret != 0 && WSAGetLastError() == WSANOTINITIALISED)
+        {
+            WORD sockVersion = MAKEWORD(2, 2);
+            WSADATA wsaData;
+            int error = WSAStartup(sockVersion, &wsaData);
+            if (error != 0)
+            {
+                Log(Log::Level::ERR) << "WSAStartup failed, error: " << error;
+                return result;
+            }
+
+            if (wsaData.wVersion != sockVersion)
+            {
+                Log(Log::Level::ERR) << "Incorrect Winsock version";
+                WSACleanup();
+                return result;
+            }
+
+            ret = getaddrinfo(addressStr.c_str(), portStr.empty() ? nullptr : portStr.c_str(), nullptr, &info);
+        }
+#endif
+
+        if (ret != 0)
         {
             int error = getLastError();
             Log(Log::Level::ERR) << "Failed to get address info of " << address << ", error: " << error;
-            return result;
+            return false;
         }
 
         struct sockaddr_in* addr = reinterpret_cast<struct sockaddr_in*>(info->ai_addr);
@@ -54,7 +80,7 @@ namespace cppsocket
 
         freeaddrinfo(info);
 
-        return result;
+        return true;
     }
 
     Socket::Socket(Network& aNetwork):
@@ -220,7 +246,12 @@ namespace cppsocket
     {
         ready = false;
 
-        std::pair<uint32_t, uint16_t> addr = getAddress(address);
+        std::pair<uint32_t, uint16_t> addr;
+
+        if (!getAddress(address, addr))
+        {
+            return false;
+        }
 
         return startAccept(addr.first, addr.second);
     }
@@ -283,7 +314,11 @@ namespace cppsocket
         ready = false;
         connecting = false;
 
-        std::pair<uint32_t, uint16_t> addr = getAddress(address);
+        std::pair<uint32_t, uint16_t> addr;
+        if (!getAddress(address, addr))
+        {
+            return false;
+        }
 
         return connect(addr.first, addr.second);
     }
