@@ -53,14 +53,14 @@ namespace cppsocket
             if (error != 0)
             {
                 Log(Log::Level::ERR) << "WSAStartup failed, error: " << error;
-                return result;
+                return false;
             }
 
             if (wsaData.wVersion != sockVersion)
             {
                 Log(Log::Level::ERR) << "Incorrect Winsock version";
                 WSACleanup();
-                return result;
+                return false;
             }
 
             ret = getaddrinfo(addressStr.c_str(), portStr.empty() ? nullptr : portStr.c_str(), nullptr, &info);
