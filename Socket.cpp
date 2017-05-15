@@ -413,7 +413,7 @@ namespace cppsocket
 
     bool Socket::createSocketFd()
     {
-        socketFd = socket(AF_INET, SOCK_STREAM, 0);
+        socketFd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
         if (socketFd == INVALID_SOCKET)
         {
