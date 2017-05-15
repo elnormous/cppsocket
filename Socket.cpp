@@ -22,6 +22,29 @@ namespace cppsocket
     static const int WAITING_QUEUE_SIZE = 5;
     static uint8_t TEMP_BUFFER[65536];
 
+#ifdef _MSC_VER
+    static inline bool initWSA()
+    {
+        WORD sockVersion = MAKEWORD(2, 2);
+        WSADATA wsaData;
+        int error = WSAStartup(sockVersion, &wsaData);
+        if (error != 0)
+        {
+            Log(Log::Level::ERR) << "WSAStartup failed, error: " << error;
+            return false;
+        }
+
+        if (wsaData.wVersion != sockVersion)
+        {
+            Log(Log::Level::ERR) << "Incorrect Winsock version";
+            WSACleanup();
+            return false;
+        }
+
+        return true;
+    }
+#endif
+
     bool Socket::getAddress(const std::string& address, std::pair<uint32_t, uint16_t>& result)
     {
         result.first = ANY_ADDRESS;
@@ -47,21 +70,7 @@ namespace cppsocket
 #ifdef _MSC_VER
         if (ret != 0 && WSAGetLastError() == WSANOTINITIALISED)
         {
-            WORD sockVersion = MAKEWORD(2, 2);
-            WSADATA wsaData;
-            int error = WSAStartup(sockVersion, &wsaData);
-            if (error != 0)
-            {
-                Log(Log::Level::ERR) << "WSAStartup failed, error: " << error;
-                return false;
-            }
-
-            if (wsaData.wVersion != sockVersion)
-            {
-                Log(Log::Level::ERR) << "Incorrect Winsock version";
-                WSACleanup();
-                return false;
-            }
+            if (!initWSA()) return false;
 
             ret = getaddrinfo(addressStr.c_str(), portStr.empty() ? nullptr : portStr.c_str(), nullptr, &info);
         }
@@ -453,21 +462,7 @@ namespace cppsocket
 #ifdef _MSC_VER
         if (socketFd == INVALID_SOCKET && WSAGetLastError() == WSANOTINITIALISED)
         {
-            WORD sockVersion = MAKEWORD(2, 2);
-            WSADATA wsaData;
-            int error = WSAStartup(sockVersion, &wsaData);
-            if (error != 0)
-            {
-                Log(Log::Level::ERR) << "WSAStartup failed, error: " << error;
-                return false;
-            }
-
-            if (wsaData.wVersion != sockVersion)
-            {
-                Log(Log::Level::ERR) << "Incorrect Winsock version";
-                WSACleanup();
-                return false;
-            }
+            if (!initWSA()) return false;
 
             socketFd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
         }
