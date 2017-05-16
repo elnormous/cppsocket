@@ -5,7 +5,7 @@
 #include <iostream>
 #include <string>
 #include <ctime>
-#ifdef _MSC_VER
+#ifdef _WIN32
 #include <windows.h>
 #include <strsafe.h>
 #else
@@ -47,7 +47,7 @@ namespace cppsocket
                 std::cout << timeBuffer << ": " << s << std::endl;
             }
 
-#ifdef _MSC_VER
+#ifdef _WIN32
             wchar_t szBuffer[MAX_PATH];
             MultiByteToWideChar(CP_UTF8, 0, s.c_str(), -1, szBuffer, MAX_PATH);
             StringCchCatW(szBuffer, sizeof(szBuffer), L"\n");

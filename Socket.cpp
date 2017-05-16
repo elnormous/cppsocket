@@ -2,7 +2,7 @@
 //  cppsocket
 //
 
-#ifdef _MSC_VER
+#ifdef _WIN32
 #define NOMINMAX
 #include <winsock2.h>
 #include <ws2tcpip.h>
@@ -22,7 +22,7 @@ namespace cppsocket
     static const int WAITING_QUEUE_SIZE = 5;
     static uint8_t TEMP_BUFFER[65536];
 
-#ifdef _MSC_VER
+#ifdef _WIN32
     static inline bool initWSA()
     {
         WORD sockVersion = MAKEWORD(2, 2);
@@ -67,7 +67,7 @@ namespace cppsocket
         addrinfo* info;
         int ret = getaddrinfo(addressStr.c_str(), portStr.empty() ? nullptr : portStr.c_str(), nullptr, &info);
 
-#ifdef _MSC_VER
+#ifdef _WIN32
         if (ret != 0 && WSAGetLastError() == WSANOTINITIALISED)
         {
             if (!initWSA()) return false;
@@ -362,7 +362,7 @@ namespace cppsocket
         {
             int error = getLastError();
 
-#ifdef _MSC_VER
+#ifdef _WIN32
             if (error == WSAEWOULDBLOCK)
 #else
                 if (error == EINPROGRESS)
@@ -459,7 +459,7 @@ namespace cppsocket
     {
         socketFd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
-#ifdef _MSC_VER
+#ifdef _WIN32
         if (socketFd == INVALID_SOCKET && WSAGetLastError() == WSANOTINITIALISED)
         {
             if (!initWSA()) return false;
@@ -500,7 +500,7 @@ namespace cppsocket
     {
         if (socketFd != INVALID_SOCKET)
         {
-#ifdef _MSC_VER
+#ifdef _WIN32
             int result = closesocket(socketFd);
 #else
             int result = ::close(socketFd);
@@ -529,7 +529,7 @@ namespace cppsocket
             return false;
         }
 
-#ifdef _MSC_VER
+#ifdef _WIN32
         unsigned long mode = block ? 0 : 1;
         if (ioctlsocket(socketFd, FIONBIO, &mode) != 0)
         {
@@ -566,7 +566,7 @@ namespace cppsocket
         if (accepting)
         {
             sockaddr_in address;
-#ifdef _MSC_VER
+#ifdef _WIN32
             int addressLength = static_cast<int>(sizeof(address));
 #else
             socklen_t addressLength = sizeof(address);
@@ -579,7 +579,7 @@ namespace cppsocket
                 int error = getLastError();
 
                 if (error == EAGAIN ||
-#ifdef _MSC_VER
+#ifdef _WIN32
                     error == WSAEWOULDBLOCK ||
 #endif
                     error == EWOULDBLOCK)
@@ -635,13 +635,13 @@ namespace cppsocket
     {
 #if defined(__APPLE__)
         int flags = 0;
-#elif defined(_MSC_VER)
+#elif defined(_WIN32)
         int flags = 0;
 #else
         int flags = MSG_NOSIGNAL;
 #endif
 
-#ifdef _MSC_VER
+#ifdef _WIN32
         int size = recv(socketFd, reinterpret_cast<char*>(TEMP_BUFFER), sizeof(TEMP_BUFFER), flags);
 #else
         ssize_t size = recv(socketFd, reinterpret_cast<char*>(TEMP_BUFFER), sizeof(TEMP_BUFFER), flags);
@@ -652,7 +652,7 @@ namespace cppsocket
             int error = getLastError();
 
             if (error == EAGAIN ||
-#ifdef _MSC_VER
+#ifdef _WIN32
                 error == WSAEWOULDBLOCK ||
 #endif
                 error == EWOULDBLOCK)
@@ -704,13 +704,13 @@ namespace cppsocket
         {
 #if defined(__APPLE__)
             int flags = 0;
-#elif defined(_MSC_VER)
+#elif defined(_WIN32)
             int flags = 0;
 #else
             int flags = MSG_NOSIGNAL;
 #endif
 
-#ifdef _MSC_VER
+#ifdef _WIN32
             int dataSize = static_cast<int>(outData.size());
             int size = ::send(socketFd, reinterpret_cast<const char*>(outData.data()), dataSize, flags);
 #else
@@ -722,7 +722,7 @@ namespace cppsocket
             {
                 int error = getLastError();
                 if (error == EAGAIN ||
-#ifdef _MSC_VER
+#ifdef _WIN32
                     error == WSAEWOULDBLOCK ||
 #endif
                     error == EWOULDBLOCK)

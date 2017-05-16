@@ -4,7 +4,7 @@
 
 #include <algorithm>
 #include <chrono>
-#ifdef _MSC_VER
+#ifdef _WIN32
 #define NOMINMAX
 #include <winsock2.h>
 #else
@@ -72,7 +72,7 @@ namespace cppsocket
 
         if (!pollFds.empty())
         {
-#ifdef _MSC_VER
+#ifdef _WIN32
             if (WSAPoll(pollFds.data(), static_cast<ULONG>(pollFds.size()), 0) < 0)
 #else
             if (poll(pollFds.data(), static_cast<nfds_t>(pollFds.size()), 0) < 0)

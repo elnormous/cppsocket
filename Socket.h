@@ -9,7 +9,7 @@
 #include <cstdint>
 #include <string>
 
-#ifdef _MSC_VER
+#ifdef _WIN32
 #define NOMINMAX
 #include <winsock2.h>
 typedef SOCKET socket_t;
@@ -36,7 +36,7 @@ namespace cppsocket
 
     inline int getLastError()
     {
-#ifdef _MSC_VER
+#ifdef _WIN32
         return WSAGetLastError();
 #else
         return errno;
