@@ -299,7 +299,7 @@ namespace cppsocket
         if (bind(socketFd, reinterpret_cast<sockaddr*>(&serverAddress), sizeof(serverAddress)) < 0)
         {
             int error = getLastError();
-            Log(Log::Level::ERR) << "Failed to bind server socket, error: " << error;
+            Log(Log::Level::ERR) << "Failed to bind server socket to port " << localPort << ", error: " << error;
             return false;
         }
 
