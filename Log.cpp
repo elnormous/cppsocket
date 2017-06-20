@@ -24,6 +24,12 @@ namespace cppsocket
     Log::Level Log::threshold = Log::Level::ALL;
 #endif
 
+#if defined(LOG_SYSLOG)
+    bool Log::syslogEnabled = true;
+#else
+    bool Log::syslogEnabled = false;
+#endif
+
     void Log::flush()
     {
         if (!s.empty())
@@ -54,16 +60,19 @@ namespace cppsocket
             OutputDebugStringW(szBuffer);
 #else
 #if defined(LOG_SYSLOG)
-            int priority = 0;
-            switch (level)
+            if (syslogEnabled)
             {
-                case Level::ERR: priority = LOG_ERR; break;
-                case Level::WARN: priority = LOG_WARNING; break;
-                case Level::INFO: priority = LOG_INFO; break;
-                case Level::ALL: priority = LOG_DEBUG; break;
-                default: break;
+                int priority = 0;
+                switch (level)
+                {
+                    case Level::ERR: priority = LOG_ERR; break;
+                    case Level::WARN: priority = LOG_WARNING; break;
+                    case Level::INFO: priority = LOG_INFO; break;
+                    case Level::ALL: priority = LOG_DEBUG; break;
+                    default: break;
+                }
+                syslog(priority, "%s", s.c_str());
             }
-            syslog(priority, "%s", s.c_str());
 #endif
 #endif
             s.clear();

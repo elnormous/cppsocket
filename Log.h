@@ -21,6 +21,7 @@ namespace cppsocket
         };
 
         static Level threshold;
+        static bool syslogEnabled;
 
         Log()
         {
