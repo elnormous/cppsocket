@@ -58,8 +58,7 @@ namespace cppsocket
             MultiByteToWideChar(CP_UTF8, 0, s.c_str(), -1, szBuffer, MAX_PATH);
             StringCchCatW(szBuffer, sizeof(szBuffer), L"\n");
             OutputDebugStringW(szBuffer);
-#else
-#if defined(LOG_SYSLOG)
+#elif defined(LOG_SYSLOG)
             if (syslogEnabled)
             {
                 int priority = 0;
@@ -73,7 +72,6 @@ namespace cppsocket
                 }
                 syslog(priority, "%s", s.c_str());
             }
-#endif
 #endif
             s.clear();
         }
