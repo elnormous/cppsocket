@@ -11,7 +11,7 @@
 #include <string>
 #include <set>
 #include <chrono>
-#include "Socket.h"
+#include "Socket.hpp"
 
 namespace cppsocket
 {

@@ -13,9 +13,9 @@
 #endif
 #include <cstring>
 #include <fcntl.h>
-#include "Log.h"
-#include "Socket.h"
-#include "Network.h"
+#include "Socket.hpp"
+#include "Network.hpp"
+#include "Log.hpp"
 
 namespace cppsocket
 {

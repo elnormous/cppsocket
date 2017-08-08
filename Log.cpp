@@ -13,8 +13,7 @@
     #include <sys/syslog.h>
     #endif
 #endif
-
-#include "Log.h"
+#include "Log.hpp"
 
 namespace cppsocket
 {

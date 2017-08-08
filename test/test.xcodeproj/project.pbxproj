@@ -28,11 +28,11 @@
 /* Begin PBXFileReference section */
 		300934091C873DF200CC50D3 /* test */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = test; sourceTree = BUILT_PRODUCTS_DIR; };
 		30513E4A1D390DCB00F9B4BA /* Network.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Network.cpp; sourceTree = "<group>"; };
-		30513E4B1D390DCB00F9B4BA /* Network.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Network.h; sourceTree = "<group>"; };
+		30513E4B1D390DCB00F9B4BA /* Network.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Network.hpp; sourceTree = "<group>"; };
 		30513E4C1D390DCB00F9B4BA /* Socket.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Socket.cpp; sourceTree = "<group>"; };
-		30513E4D1D390DCB00F9B4BA /* Socket.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Socket.h; sourceTree = "<group>"; };
+		30513E4D1D390DCB00F9B4BA /* Socket.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Socket.hpp; sourceTree = "<group>"; };
 		30513E521D390DE600F9B4BA /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
-		30B2ECEF1DAE826C00DA5160 /* Log.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Log.h; sourceTree = "<group>"; };
+		30B2ECEF1DAE826C00DA5160 /* Log.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Log.hpp; sourceTree = "<group>"; };
 		30B2ECF11DAE830F00DA5160 /* Log.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Log.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -76,11 +76,11 @@
 			isa = PBXGroup;
 			children = (
 				30B2ECF11DAE830F00DA5160 /* Log.cpp */,
-				30B2ECEF1DAE826C00DA5160 /* Log.h */,
+				30B2ECEF1DAE826C00DA5160 /* Log.hpp */,
 				30513E4A1D390DCB00F9B4BA /* Network.cpp */,
-				30513E4B1D390DCB00F9B4BA /* Network.h */,
+				30513E4B1D390DCB00F9B4BA /* Network.hpp */,
 				30513E4C1D390DCB00F9B4BA /* Socket.cpp */,
-				30513E4D1D390DCB00F9B4BA /* Socket.h */,
+				30513E4D1D390DCB00F9B4BA /* Socket.hpp */,
 			);
 			name = cppsocket;
 			path = ..;

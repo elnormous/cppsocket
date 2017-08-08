@@ -12,9 +12,9 @@
 #include <netinet/in.h>
 #include <poll.h>
 #endif
-#include "Log.h"
-#include "Network.h"
-#include "Socket.h"
+#include "Network.hpp"
+#include "Socket.hpp"
+#include "Log.hpp"
 
 namespace cppsocket
 {

@@ -23,13 +23,13 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\Network.h">
+    <ClInclude Include="..\Network.hpp">
       <Filter>cppsocket</Filter>
     </ClInclude>
-    <ClInclude Include="..\Socket.h">
+    <ClInclude Include="..\Socket.hpp">
       <Filter>cppsocket</Filter>
     </ClInclude>
-    <ClInclude Include="..\Log.h">
+    <ClInclude Include="..\Log.hpp">
       <Filter>cppsocket</Filter>
     </ClInclude>
   </ItemGroup>

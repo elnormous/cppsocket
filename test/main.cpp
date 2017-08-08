@@ -6,7 +6,7 @@
 #include <chrono>
 #include <thread>
 #include <sstream>
-#include "Network.h"
+#include "Network.hpp"
 
 static void printUsage(const std::string& executable)
 {

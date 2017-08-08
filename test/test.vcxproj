@@ -25,9 +25,9 @@
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\Log.h" />
-    <ClInclude Include="..\Network.h" />
-    <ClInclude Include="..\Socket.h" />
+    <ClInclude Include="..\Log.hpp" />
+    <ClInclude Include="..\Network.hpp" />
+    <ClInclude Include="..\Socket.hpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{614C7EC0-3262-40DF-B884-224B959A01F9}</ProjectGuid>
