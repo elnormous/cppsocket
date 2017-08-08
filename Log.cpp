@@ -34,8 +34,8 @@ namespace cppsocket
         if (!s.empty())
         {
             time_t rawTime;
-            struct tm * timeInfo;
-            char timeBuffer[80];
+            struct tm* timeInfo;
+            char timeBuffer[20];
 
             time(&rawTime);
             timeInfo = localtime(&rawTime);
