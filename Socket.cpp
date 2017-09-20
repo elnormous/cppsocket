@@ -84,7 +84,7 @@ namespace cppsocket
         }
 
         sockaddr_in* addr = reinterpret_cast<sockaddr_in*>(info->ai_addr);
-        result.first = ntohl(addr->sin_addr.s_addr);
+        result.first = addr->sin_addr.s_addr;
         result.second = ntohs(addr->sin_port);
 
         freeaddrinfo(info);
@@ -294,7 +294,7 @@ namespace cppsocket
         memset(&serverAddress, 0, sizeof(serverAddress));
         serverAddress.sin_family = AF_INET;
         serverAddress.sin_port = htons(localPort);
-        serverAddress.sin_addr.s_addr = htonl(address);
+        serverAddress.sin_addr.s_addr = address;
 
         if (bind(socketFd, reinterpret_cast<sockaddr*>(&serverAddress), sizeof(serverAddress)) < 0)
         {
@@ -355,8 +355,8 @@ namespace cppsocket
         sockaddr_in addr;
         memset(&addr, 0, sizeof(addr));
         addr.sin_family = AF_INET;
+        addr.sin_addr.s_addr = remoteIPAddress;
         addr.sin_port = htons(remotePort);
-        addr.sin_addr.s_addr = htonl(remoteIPAddress);
 
         if (::connect(socketFd, reinterpret_cast<const sockaddr*>(&addr), sizeof(addr)) < 0)
         {
@@ -407,7 +407,7 @@ namespace cppsocket
             return false;
         }
 
-        localIPAddress = ntohl(localAddr.sin_addr.s_addr);
+        localIPAddress = localAddr.sin_addr.s_addr;
         localPort = ntohs(localAddr.sin_port);
 
         return true;
@@ -594,11 +594,11 @@ namespace cppsocket
             }
             else
             {
-                Log(Log::Level::INFO) << "Client connected from " << ipToString(ntohl(address.sin_addr.s_addr)) << ":" << ntohs(address.sin_port) << " to " << ipToString(localIPAddress) << ":" << localPort;
+                Log(Log::Level::INFO) << "Client connected from " << ipToString(address.sin_addr.s_addr) << ":" << ntohs(address.sin_port) << " to " << ipToString(localIPAddress) << ":" << localPort;
 
                 Socket socket(network, clientFd, true,
                               localIPAddress, localPort,
-                              ntohl(address.sin_addr.s_addr),
+                              address.sin_addr.s_addr,
                               ntohs(address.sin_port));
                 
                 if (acceptCallback)
