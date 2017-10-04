@@ -85,30 +85,37 @@ namespace cppsocket
 
             for (pollfd& pollFd : pollFds)
             {
-                auto iter = std::find_if(sockets.begin(), sockets.end(), [&pollFd](Socket* socket) {
+                for (Socket* deleteSocket : socketDeleteSet)
+                {
+                    auto i = std::find(sockets.begin(), sockets.end(), deleteSocket);
+
+                    if (i != sockets.end())
+                    {
+                        sockets.erase(i);
+                    }
+                }
+
+                socketDeleteSet.clear();
+
+                auto i = std::find_if(sockets.begin(), sockets.end(), [&pollFd](Socket* socket) {
                     return socket->socketFd == pollFd.fd;
                 });
 
-                if (iter != sockets.end())
+                if (i != sockets.end())
                 {
-                    Socket* socket = *iter;
+                    Socket* socket = *i;
 
-                    auto i = std::find(socketDeleteSet.begin(), socketDeleteSet.end(), socket);
-
-                    if (i == socketDeleteSet.end())
+                    if (pollFd.revents & POLLIN)
                     {
-                        if (pollFd.revents & POLLIN)
-                        {
-                            socket->read();
-                        }
-
-                        if (pollFd.revents & POLLOUT)
-                        {
-                            socket->write();
-                        }
-
-                        socket->update(delta);
+                        socket->read();
                     }
+
+                    if (pollFd.revents & POLLOUT)
+                    {
+                        socket->write();
+                    }
+                    
+                    socket->update(delta);
                 }
             }
         }
