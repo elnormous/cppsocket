@@ -212,6 +212,7 @@ namespace cppsocket
         accepting = false;
         connecting = false;
         outData.clear();
+        inData.clear();
 
         return result;
     }
