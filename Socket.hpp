@@ -138,5 +138,7 @@ namespace cppsocket
 
         std::vector<uint8_t> inData;
         std::vector<uint8_t> outData;
+
+        std::string remoteAddressString;
     };
 }
