@@ -465,14 +465,14 @@ namespace cppsocket
 
     bool Socket::createSocketFd()
     {
-        socketFd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+        socketFd = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
 
 #ifdef _WIN32
         if (socketFd == INVALID_SOCKET && WSAGetLastError() == WSANOTINITIALISED)
         {
             if (!initWSA()) return false;
 
-            socketFd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+            socketFd = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
         }
 #endif
 
