@@ -155,39 +155,42 @@ namespace cppsocket
 
     Socket& Socket::operator=(Socket&& other)
     {
-        closeSocketFd();
+        if (&other != this)
+        {
+            closeSocketFd();
 
-        socketFd = other.socketFd;
-        ready = other.ready;
-        blocking = other.blocking;
-        localIPAddress = other.localIPAddress;
-        localPort = other.localPort;
-        remoteIPAddress = other.remoteIPAddress;
-        remotePort = other.remotePort;
-        connectTimeout = other.connectTimeout;
-        timeSinceConnect = other.timeSinceConnect;
-        accepting = other.accepting;
-        connecting = other.connecting;
-        readCallback = std::move(other.readCallback);
-        closeCallback = std::move(other.closeCallback);
-        acceptCallback = std::move(other.acceptCallback);
-        connectCallback = std::move(other.connectCallback);
-        connectErrorCallback = std::move(other.connectErrorCallback);
-        outData = std::move(other.outData);
+            socketFd = other.socketFd;
+            ready = other.ready;
+            blocking = other.blocking;
+            localIPAddress = other.localIPAddress;
+            localPort = other.localPort;
+            remoteIPAddress = other.remoteIPAddress;
+            remotePort = other.remotePort;
+            connectTimeout = other.connectTimeout;
+            timeSinceConnect = other.timeSinceConnect;
+            accepting = other.accepting;
+            connecting = other.connecting;
+            readCallback = std::move(other.readCallback);
+            closeCallback = std::move(other.closeCallback);
+            acceptCallback = std::move(other.acceptCallback);
+            connectCallback = std::move(other.connectCallback);
+            connectErrorCallback = std::move(other.connectErrorCallback);
+            outData = std::move(other.outData);
 
-        remoteAddressString = ipToString(remoteIPAddress) + ":" + std::to_string(remotePort);
+            remoteAddressString = ipToString(remoteIPAddress) + ":" + std::to_string(remotePort);
 
-        other.socketFd = INVALID_SOCKET;
-        other.ready = false;
-        other.blocking = true;
-        other.localIPAddress = 0;
-        other.localPort = 0;
-        other.remoteIPAddress = 0;
-        other.remotePort = 0;
-        other.accepting = false;
-        other.connecting = false;
-        other.connectTimeout = 10.0f;
-        other.timeSinceConnect = 0.0f;
+            other.socketFd = INVALID_SOCKET;
+            other.ready = false;
+            other.blocking = true;
+            other.localIPAddress = 0;
+            other.localPort = 0;
+            other.remoteIPAddress = 0;
+            other.remotePort = 0;
+            other.accepting = false;
+            other.connecting = false;
+            other.connectTimeout = 10.0f;
+            other.timeSinceConnect = 0.0f;
+        }
 
         return *this;
     }
