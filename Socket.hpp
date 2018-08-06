@@ -45,14 +45,14 @@ namespace cppsocket
 
     class Network;
 
-    class Socket
+    class Socket final
     {
         friend Network;
     public:
         static bool getAddress(const std::string& address, std::pair<uint32_t, uint16_t>& result);
 
         Socket(Network& aNetwork);
-        virtual ~Socket();
+        ~Socket();
 
         Socket(const Socket&) = delete;
         Socket& operator=(const Socket&) = delete;
@@ -60,8 +60,8 @@ namespace cppsocket
         Socket(Socket&& other);
         Socket& operator=(Socket&& other);
 
-        virtual bool close();
-        virtual void update(float delta);
+        bool close();
+        void update(float delta);
 
         bool startRead();
 
@@ -106,7 +106,7 @@ namespace cppsocket
         bool readData();
         bool writeData();
 
-        virtual bool disconnected();
+        bool disconnected();
 
         bool createSocketFd();
         bool closeSocketFd();

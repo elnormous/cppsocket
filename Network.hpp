@@ -15,7 +15,7 @@
 
 namespace cppsocket
 {
-    class Network
+    class Network final
     {
         friend Socket;
     public:
