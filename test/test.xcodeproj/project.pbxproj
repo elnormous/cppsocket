@@ -24,8 +24,8 @@
 
 /* Begin PBXFileReference section */
 		300934091C873DF200CC50D3 /* test */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = test; sourceTree = BUILT_PRODUCTS_DIR; };
-		30513E4D1D390DCB00F9B4BA /* Socket.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Socket.hpp; sourceTree = "<group>"; };
 		30513E521D390DE600F9B4BA /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		3085DA1C2119063B00F4C2D0 /* Socket.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = Socket.hpp; path = include/Socket.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -67,7 +67,7 @@
 		30513E371D390D8200F9B4BA /* cppsocket */ = {
 			isa = PBXGroup;
 			children = (
-				30513E4D1D390DCB00F9B4BA /* Socket.hpp */,
+				3085DA1C2119063B00F4C2D0 /* Socket.hpp */,
 			);
 			name = cppsocket;
 			path = ..;
@@ -254,7 +254,7 @@
 		300934111C873DF200CC50D3 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				HEADER_SEARCH_PATHS = ..;
+				HEADER_SEARCH_PATHS = ../include;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WARNING_CFLAGS = "-Wold-style-cast";
 			};
@@ -263,7 +263,7 @@
 		300934121C873DF200CC50D3 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				HEADER_SEARCH_PATHS = ..;
+				HEADER_SEARCH_PATHS = ../include;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				WARNING_CFLAGS = "-Wold-style-cast";
 			};

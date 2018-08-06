@@ -8,3 +8,4 @@ test/test.sdf
 *.opendb
 *.db
 *.o
+test/test
