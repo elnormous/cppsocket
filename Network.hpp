@@ -27,7 +27,7 @@ namespace cppsocket
         Network(Network&&) = delete;
         Network& operator=(Network&&) = delete;
 
-        bool update();
+        void update();
 
     protected:
         void addSocket(Socket& socket);

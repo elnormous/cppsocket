@@ -12,6 +12,7 @@
 #include <netinet/in.h>
 #include <poll.h>
 #endif
+#include <stdexcept>
 #include "Network.hpp"
 #include "Socket.hpp"
 #include "Log.hpp"
@@ -23,16 +24,14 @@ namespace cppsocket
         previousTime = std::chrono::steady_clock::now();
     }
 
-    bool Network::update()
+    void Network::update()
     {
         for (Socket* socket : socketDeleteSet)
         {
             auto i = std::find(sockets.begin(), sockets.end(), socket);
 
             if (i != sockets.end())
-            {
                 sockets.erase(i);
-            }
         }
 
         socketDeleteSet.clear();
@@ -42,9 +41,7 @@ namespace cppsocket
             auto i = std::find(sockets.begin(), sockets.end(), socket);
 
             if (i == sockets.end())
-            {
                 sockets.push_back(socket);
-            }
         }
 
         socketAddSet.clear();
@@ -79,8 +76,7 @@ namespace cppsocket
 #endif
             {
                 int error = getLastError();
-                Log(Log::Level::ERR) << "Poll failed, error: " << error;
-                return false;
+                throw std::runtime_error("Poll failed, error: " + std::to_string(error));
             }
 
             for (pollfd& pollFd : pollFds)
@@ -106,21 +102,15 @@ namespace cppsocket
                     Socket* socket = *i;
 
                     if (pollFd.revents & POLLIN)
-                    {
                         socket->read();
-                    }
 
                     if (pollFd.revents & POLLOUT)
-                    {
                         socket->write();
-                    }
                     
                     socket->update(delta);
                 }
             }
         }
-
-        return true;
     }
 
     void Network::addSocket(Socket& socket)

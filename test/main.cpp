@@ -53,9 +53,7 @@ int main(int argc, const char* argv[])
                         break;
                     }
                     else
-                    {
                         ++i;
-                    }
                 }
 
             });

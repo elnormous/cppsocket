@@ -12,6 +12,7 @@
 #include <unistd.h>
 #endif
 #include <cstring>
+#include <stdexcept>
 #include <fcntl.h>
 #include "Socket.hpp"
 #include "Network.hpp"
@@ -45,7 +46,7 @@ namespace cppsocket
     }
 #endif
 
-    bool Socket::getAddress(const std::string& address, std::pair<uint32_t, uint16_t>& result)
+    void Socket::getAddress(const std::string& address, std::pair<uint32_t, uint16_t>& result)
     {
         result.first = ANY_ADDRESS;
         result.second = ANY_PORT;
@@ -79,8 +80,7 @@ namespace cppsocket
         if (ret != 0)
         {
             int error = getLastError();
-            Log(Log::Level::ERR) << "Failed to get address info of " << address << ", error: " << error;
-            return false;
+            throw std::runtime_error("Failed to get address info of " + address + ", error: " + std::to_string(error));
         }
 
         sockaddr_in* addr = reinterpret_cast<sockaddr_in*>(info->ai_addr);
@@ -88,8 +88,6 @@ namespace cppsocket
         result.second = ntohs(addr->sin_port);
 
         freeaddrinfo(info);
-
-        return true;
     }
 
     Socket::Socket(Network& aNetwork):
@@ -195,21 +193,12 @@ namespace cppsocket
         return *this;
     }
 
-    bool Socket::close()
+    void Socket::close()
     {
-        bool result = true;
-
         if (socketFd != INVALID_SOCKET)
         {
-            if (ready)
-            {
-                writeData();
-            }
-
-            if (!closeSocketFd())
-            {
-                result = false;
-            }
+            if (ready) writeData();
+            closeSocketFd();
         }
 
         localIPAddress = 0;
@@ -221,8 +210,6 @@ namespace cppsocket
         connecting = false;
         outData.clear();
         inData.clear();
-
-        return result;
     }
 
     void Socket::update(float delta)
@@ -247,46 +234,33 @@ namespace cppsocket
         }
     }
 
-    bool Socket::startRead()
+    void Socket::startRead()
     {
         if (socketFd == INVALID_SOCKET)
-        {
-            Log(Log::Level::ERR) << "Can not start reading, invalid socket";
-            return false;
-        }
+            throw std::runtime_error("Can not start reading, invalid socket");
 
         ready = true;
-
-        return true;
     }
 
-    bool Socket::startAccept(const std::string& address)
+    void Socket::startAccept(const std::string& address)
     {
         ready = false;
 
         std::pair<uint32_t, uint16_t> addr;
 
-        if (!getAddress(address, addr))
-        {
-            return false;
-        }
+        getAddress(address, addr);
 
-        return startAccept(addr.first, addr.second);
+        startAccept(addr.first, addr.second);
     }
 
-    bool Socket::startAccept(uint32_t address, uint16_t newPort)
+    void Socket::startAccept(uint32_t address, uint16_t newPort)
     {
         ready = false;
 
         if (socketFd != INVALID_SOCKET)
-        {
             close();
-        }
 
-        if (!createSocketFd())
-        {
-            return false;
-        }
+        createSocketFd();
 
         localIPAddress = address;
         localPort = newPort;
@@ -295,8 +269,7 @@ namespace cppsocket
         if (setsockopt(socketFd, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char*>(&value), sizeof(value)) < 0)
         {
             int error = getLastError();
-            Log(Log::Level::ERR) << "setsockopt(SO_REUSEADDR) failed, error: " << error;
-            return false;
+            throw std::runtime_error("setsockopt(SO_REUSEADDR) failed, error: " + std::to_string(error));
         }
 
         sockaddr_in serverAddress;
@@ -308,53 +281,41 @@ namespace cppsocket
         if (bind(socketFd, reinterpret_cast<sockaddr*>(&serverAddress), sizeof(serverAddress)) < 0)
         {
             int error = getLastError();
-            Log(Log::Level::ERR) << "Failed to bind server socket to port " << localPort << ", error: " << error;
-            return false;
+            throw std::runtime_error("Failed to bind server socket to port " + std::to_string(localPort) + ", error: " + std::to_string(error));
         }
 
         if (listen(socketFd, WAITING_QUEUE_SIZE) < 0)
         {
             int error = getLastError();
-            Log(Log::Level::ERR) << "Failed to listen on " << ipToString(localIPAddress) << ":" << localPort << ", error: " << error;
-            return false;
+            throw std::runtime_error("Failed to listen on " + ipToString(localIPAddress) + ":" + std::to_string(localPort) + ", error: " + std::to_string(error));
         }
 
         Log(Log::Level::INFO) << "Server listening on " << ipToString(localIPAddress) << ":" << localPort;
         
         accepting = true;
         ready = true;
-        
-        return true;
     }
 
-    bool Socket::connect(const std::string& address)
+    void Socket::connect(const std::string& address)
     {
         ready = false;
         connecting = false;
 
         std::pair<uint32_t, uint16_t> addr;
-        if (!getAddress(address, addr))
-        {
-            return false;
-        }
+        getAddress(address, addr);
 
-        return connect(addr.first, addr.second);
+        connect(addr.first, addr.second);
     }
 
-    bool Socket::connect(uint32_t address, uint16_t newPort)
+    void Socket::connect(uint32_t address, uint16_t newPort)
     {
         ready = false;
         connecting = false;
 
         if (socketFd != INVALID_SOCKET)
-        {
             close();
-        }
 
-        if (!createSocketFd())
-        {
-            return false;
-        }
+        createSocketFd();
 
         remoteIPAddress = address;
         remotePort = newPort;
@@ -383,12 +344,10 @@ namespace cppsocket
                 }
                 else
                 {
-                    Log(Log::Level::WARN) << "Failed to connect to " << remoteAddressString << ", error: " << error;
                     if (connectErrorCallback)
-                    {
                         connectErrorCallback(*this);
-                    }
-                    return false;
+
+                    throw std::runtime_error("Failed to connect to " + remoteAddressString + ", error: " + std::to_string(error));
                 }
         }
         else
@@ -408,20 +367,15 @@ namespace cppsocket
         if (getsockname(socketFd, reinterpret_cast<sockaddr*>(&localAddr), &localAddrSize) != 0)
         {
             int error = getLastError();
-            Log(Log::Level::WARN) << "Failed to get address of the socket connecting to " << remoteAddressString << ", error: " << error;
             closeSocketFd();
             connecting = false;
             if (connectErrorCallback)
-            {
                 connectErrorCallback(*this);
-            }
-            return false;
+            throw std::runtime_error("Failed to get address of the socket connecting to " + remoteAddressString + ", error: " + std::to_string(error));
         }
 
         localIPAddress = localAddr.sin_addr.s_addr;
         localPort = ntohs(localAddr.sin_port);
-
-        return true;
     }
 
     void Socket::setConnectTimeout(float timeout)
@@ -454,19 +408,15 @@ namespace cppsocket
         connectErrorCallback = newConnectErrorCallback;
     }
 
-    bool Socket::setBlocking(bool newBlocking)
+    void Socket::setBlocking(bool newBlocking)
     {
         blocking = newBlocking;
 
         if (socketFd != INVALID_SOCKET)
-        {
-            return setFdBlocking(newBlocking);
-        }
-
-        return true;
+            setFdBlocking(newBlocking);
     }
 
-    bool Socket::createSocketFd()
+    void Socket::createSocketFd()
     {
         socketFd = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
 
@@ -482,97 +432,64 @@ namespace cppsocket
         if (socketFd == INVALID_SOCKET)
         {
             int error = getLastError();
-            Log(Log::Level::ERR) << "Failed to create socket, error: " << error;
-            return false;
+            throw std::runtime_error("Failed to create socket, error: " + std::to_string(error));
         }
 
         if (!blocking)
-        {
-            if (!setFdBlocking(false))
-            {
-                return false;
-            }
-        }
+            setFdBlocking(false);
 
 #ifdef __APPLE__
         int set = 1;
         if (setsockopt(socketFd, SOL_SOCKET, SO_NOSIGPIPE, &set, sizeof(int)) != 0)
         {
             int error = getLastError();
-            Log(Log::Level::ERR) << "Failed to set socket option, error: " << error;
-            return false;
+            throw std::runtime_error("Failed to set socket option, error: " + std::to_string(error));
         }
 #endif
-
-        return true;
     }
 
-    bool Socket::closeSocketFd()
+    void Socket::closeSocketFd()
     {
         if (socketFd != INVALID_SOCKET)
         {
 #ifdef _WIN32
-            int result = closesocket(socketFd);
+            closesocket(socketFd);
 #else
-            int result = ::close(socketFd);
+            ::close(socketFd);
 #endif
             socketFd = INVALID_SOCKET;
-
-            if (result < 0)
-            {
-                int error = getLastError();
-                Log(Log::Level::ERR) << "Failed to close socket " << ipToString(localIPAddress) << ":" << localPort << ", error: " << error;
-                return false;
-            }
-            else
-            {
-                Log(Log::Level::INFO) << "Socket " << ipToString(localIPAddress) << ":" << localPort << " closed";
-            }
         }
-
-        return true;
     }
 
-    bool Socket::setFdBlocking(bool block)
+    void Socket::setFdBlocking(bool block)
     {
         if (socketFd == INVALID_SOCKET)
-        {
-            return false;
-        }
+            throw std::runtime_error("Invalid socket");
 
 #ifdef _WIN32
         unsigned long mode = block ? 0 : 1;
         if (ioctlsocket(socketFd, FIONBIO, &mode) != 0)
-        {
-            return false;
-        }
+            throw std::runtime_error("Failed to set socket mode");
 #else
         int flags = fcntl(socketFd, F_GETFL, 0);
-        if (flags < 0) return false;
+        if (flags < 0)
+            throw std::runtime_error("Failed to get socket flags");
         flags = block ? (flags & ~O_NONBLOCK) : (flags | O_NONBLOCK);
 
         if (fcntl(socketFd, F_SETFL, flags) != 0)
-        {
-            return false;
-        }
+            throw std::runtime_error("Failed to set socket flags");
 #endif
-
-        return true;
     }
 
-    bool Socket::send(std::vector<uint8_t> buffer)
+    void Socket::send(std::vector<uint8_t> buffer)
     {
         if (socketFd == INVALID_SOCKET)
-        {
-            return false;
-        }
+            throw std::runtime_error("Invalid socket");
 
         outData.insert(outData.end(), buffer.begin(), buffer.end());
-
-        return true;
     }
 
-    bool Socket::read()
+    void Socket::read()
     {
         if (accepting)
         {
@@ -599,8 +516,7 @@ namespace cppsocket
                 }
                 else
                 {
-                    Log(Log::Level::ERR) << "Failed to accept client, error: " << error;
-                    return false;
+                    throw std::runtime_error("Failed to accept client, error: " + std::to_string(error));
                 }
             }
             else
@@ -622,11 +538,9 @@ namespace cppsocket
         {
             return readData();
         }
-
-        return true;
     }
 
-    bool Socket::write()
+    void Socket::write()
     {
         if (connecting)
         {
@@ -642,7 +556,7 @@ namespace cppsocket
         return writeData();
     }
 
-    bool Socket::readData()
+    void Socket::readData()
     {
 #if defined(__APPLE__)
         int flags = 0;
@@ -669,32 +583,28 @@ namespace cppsocket
                 error == EWOULDBLOCK)
             {
                 Log(Log::Level::WARN) << "Nothing to read from " << remoteAddressString;
-                return true;
+                return;
             }
             else if (error == ECONNRESET)
             {
-                Log(Log::Level::INFO) << "Connection to " << remoteAddressString << " reset by peer";
                 disconnected();
-                return false;
+                throw std::runtime_error("Connection to " + remoteAddressString + " reset by peer");
             }
             else if (error == ECONNREFUSED)
             {
-                Log(Log::Level::INFO) << "Connection to " << remoteAddressString << " refused";
                 disconnected();
-                return false;
+                throw std::runtime_error("Connection to " + remoteAddressString + " refused");
             }
             else
             {
-                Log(Log::Level::ERR) << "Failed to read from " << remoteAddressString << ", error: " << error;
                 disconnected();
-                return false;
+                throw std::runtime_error("Failed to read from " + remoteAddressString + ", error: " + std::to_string(error));
             }
         }
         else if (size == 0)
         {
             disconnected();
-
-            return true;
+            return;
         }
 
         Log(Log::Level::ALL) << "Socket received " << size << " bytes from " << remoteAddressString;
@@ -705,11 +615,9 @@ namespace cppsocket
         {
             readCallback(*this, inData);
         }
-        
-        return true;
     }
 
-    bool Socket::writeData()
+    void Socket::writeData()
     {
         if (ready && !outData.empty())
         {
@@ -739,25 +647,21 @@ namespace cppsocket
                     error == EWOULDBLOCK)
                 {
                     Log(Log::Level::WARN) << "Can not write to " << remoteAddressString << " now";
-                    return true;
                 }
                 else if (error == EPIPE)
                 {
-                    Log(Log::Level::ERR) << "Failed to send data to " << remoteAddressString << ", socket has been shut down";
                     disconnected();
-                    return false;
+                    throw std::runtime_error("Failed to send data to " + remoteAddressString + ", socket has been shut down");
                 }
                 else if (error == ECONNRESET)
                 {
-                    Log(Log::Level::INFO) << "Connection to " << remoteAddressString << " reset by peer";
                     disconnected();
-                    return false;
+                    throw std::runtime_error("Connection to " + remoteAddressString + " reset by peer");
                 }
                 else
                 {
-                    Log(Log::Level::ERR) << "Failed to write to socket " << remoteAddressString << ", error: " << error;
                     disconnected();
-                    return false;
+                    throw std::runtime_error("Failed to write to socket " + remoteAddressString + ", error: " + std::to_string(error));
                 }
             }
             else if (size != dataSize)
@@ -774,14 +678,10 @@ namespace cppsocket
                 outData.erase(outData.begin(), outData.begin() + size);
             }
         }
-        
-        return true;
     }
 
-    bool Socket::disconnected()
+    void Socket::disconnected()
     {
-        bool result = true;
-
         if (connecting)
         {
             connecting = false;
@@ -790,17 +690,10 @@ namespace cppsocket
             Log(Log::Level::WARN) << "Failed to connect to " << remoteAddressString;
 
             if (socketFd != INVALID_SOCKET)
-            {
-                if (!closeSocketFd())
-                {
-                    result = false;
-                }
-            }
+                closeSocketFd();
 
             if (connectErrorCallback)
-            {
                 connectErrorCallback(*this);
-            }
         }
         else
         {
@@ -816,12 +709,7 @@ namespace cppsocket
                 }
 
                 if (socketFd != INVALID_SOCKET)
-                {
-                    if (!closeSocketFd())
-                    {
-                        result = false;
-                    }
-                }
+                    closeSocketFd();
 
                 localIPAddress = 0;
                 localPort = 0;
@@ -831,7 +719,5 @@ namespace cppsocket
                 outData.clear();
             }
         }
-
-        return result;
     }
 }

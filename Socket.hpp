@@ -49,7 +49,7 @@ namespace cppsocket
     {
         friend Network;
     public:
-        static bool getAddress(const std::string& address, std::pair<uint32_t, uint16_t>& result);
+        static void getAddress(const std::string& address, std::pair<uint32_t, uint16_t>& result);
 
         Socket(Network& aNetwork);
         ~Socket();
@@ -60,16 +60,16 @@ namespace cppsocket
         Socket(Socket&& other);
         Socket& operator=(Socket&& other);
 
-        bool close();
+        void close();
         void update(float delta);
 
-        bool startRead();
+        void startRead();
 
-        bool startAccept(const std::string& address);
-        bool startAccept(uint32_t address, uint16_t newPort);
+        void startAccept(const std::string& address);
+        void startAccept(uint32_t address, uint16_t newPort);
 
-        bool connect(const std::string& address);
-        bool connect(uint32_t address, uint16_t newPort);
+        void connect(const std::string& address);
+        void connect(uint32_t address, uint16_t newPort);
 
         bool isConnecting() const { return connecting; }
         void setConnectTimeout(float timeout);
@@ -80,7 +80,7 @@ namespace cppsocket
         void setConnectCallback(const std::function<void(Socket&)>& newConnectCallback);
         void setConnectErrorCallback(const std::function<void(Socket&)>& newConnectErrorCallback);
 
-        bool send(std::vector<uint8_t> buffer);
+        void send(std::vector<uint8_t> buffer);
 
         uint32_t getLocalIPAddress() const { return localIPAddress; }
         uint16_t getLocalPort() const { return localPort; }
@@ -89,7 +89,7 @@ namespace cppsocket
         uint16_t getRemotePort() const { return remotePort; }
 
         bool isBlocking() const { return blocking; }
-        bool setBlocking(bool newBlocking);
+        void setBlocking(bool newBlocking);
 
         bool isReady() const { return ready; }
 
@@ -100,17 +100,17 @@ namespace cppsocket
                uint32_t aLocalIPAddress, uint16_t aLocalPort,
                uint32_t aRemoteIPAddress, uint16_t aRemotePort);
 
-        bool read();
-        bool write();
+        void read();
+        void write();
 
-        bool readData();
-        bool writeData();
+        void readData();
+        void writeData();
 
-        bool disconnected();
+        void disconnected();
 
-        bool createSocketFd();
-        bool closeSocketFd();
-        bool setFdBlocking(bool block);
+        void createSocketFd();
+        void closeSocketFd();
+        void setFdBlocking(bool block);
 
         Network& network;
 
