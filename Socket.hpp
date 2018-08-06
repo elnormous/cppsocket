@@ -100,8 +100,8 @@ namespace cppsocket
                uint32_t aLocalIPAddress, uint16_t aLocalPort,
                uint32_t aRemoteIPAddress, uint16_t aRemotePort);
 
-        virtual bool read();
-        virtual bool write();
+        bool read();
+        bool write();
 
         bool readData();
         bool writeData();
