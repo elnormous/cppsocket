@@ -19,12 +19,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\Network.cpp" />
-    <ClCompile Include="..\Socket.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\Network.hpp" />
     <ClInclude Include="..\Socket.hpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

@@ -9,20 +9,11 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\Network.cpp">
-      <Filter>cppsocket</Filter>
-    </ClCompile>
-    <ClCompile Include="..\Socket.cpp">
-      <Filter>cppsocket</Filter>
-    </ClCompile>
     <ClCompile Include="main.cpp">
       <Filter>test</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\Network.hpp">
-      <Filter>cppsocket</Filter>
-    </ClInclude>
     <ClInclude Include="..\Socket.hpp">
       <Filter>cppsocket</Filter>
     </ClInclude>

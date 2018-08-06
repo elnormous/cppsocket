@@ -62,7 +62,7 @@ namespace cppsocket
         WSADATA wsaData;
         int error = WSAStartup(sockVersion, &wsaData);
         if (error != 0)
-            throw std::runtime_error("WSAStartup failed, error: " << error);
+            throw std::runtime_error("WSAStartup failed, error: " + std::to_string(error));
 
         if (wsaData.wVersion != sockVersion)
         {
