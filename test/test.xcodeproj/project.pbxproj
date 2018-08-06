@@ -7,8 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		30513E501D390DCB00F9B4BA /* Network.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30513E4A1D390DCB00F9B4BA /* Network.cpp */; };
-		30513E511D390DCB00F9B4BA /* Socket.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30513E4C1D390DCB00F9B4BA /* Socket.cpp */; };
 		30513E531D390DE600F9B4BA /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 30513E521D390DE600F9B4BA /* main.cpp */; };
 /* End PBXBuildFile section */
 
@@ -26,9 +24,6 @@
 
 /* Begin PBXFileReference section */
 		300934091C873DF200CC50D3 /* test */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = test; sourceTree = BUILT_PRODUCTS_DIR; };
-		30513E4A1D390DCB00F9B4BA /* Network.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Network.cpp; sourceTree = "<group>"; };
-		30513E4B1D390DCB00F9B4BA /* Network.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Network.hpp; sourceTree = "<group>"; };
-		30513E4C1D390DCB00F9B4BA /* Socket.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Socket.cpp; sourceTree = "<group>"; };
 		30513E4D1D390DCB00F9B4BA /* Socket.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Socket.hpp; sourceTree = "<group>"; };
 		30513E521D390DE600F9B4BA /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -72,9 +67,6 @@
 		30513E371D390D8200F9B4BA /* cppsocket */ = {
 			isa = PBXGroup;
 			children = (
-				30513E4A1D390DCB00F9B4BA /* Network.cpp */,
-				30513E4B1D390DCB00F9B4BA /* Network.hpp */,
-				30513E4C1D390DCB00F9B4BA /* Socket.cpp */,
 				30513E4D1D390DCB00F9B4BA /* Socket.hpp */,
 			);
 			name = cppsocket;
@@ -137,8 +129,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				30513E501D390DCB00F9B4BA /* Network.cpp in Sources */,
-				30513E511D390DCB00F9B4BA /* Socket.cpp in Sources */,
 				30513E531D390DE600F9B4BA /* main.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
