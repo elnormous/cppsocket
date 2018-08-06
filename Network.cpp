@@ -15,7 +15,6 @@
 #include <stdexcept>
 #include "Network.hpp"
 #include "Socket.hpp"
-#include "Log.hpp"
 
 namespace cppsocket
 {
@@ -86,9 +85,7 @@ namespace cppsocket
                     auto i = std::find(sockets.begin(), sockets.end(), deleteSocket);
 
                     if (i != sockets.end())
-                    {
                         sockets.erase(i);
-                    }
                 }
 
                 socketDeleteSet.clear();
@@ -120,9 +117,7 @@ namespace cppsocket
         auto setIterator = socketDeleteSet.find(&socket);
 
         if (setIterator != socketDeleteSet.end())
-        {
             socketDeleteSet.erase(setIterator);
-        }
     }
 
     void Network::removeSocket(Socket& socket)
@@ -132,8 +127,6 @@ namespace cppsocket
         auto setIterator = socketAddSet.find(&socket);
 
         if (setIterator != socketAddSet.end())
-        {
             socketAddSet.erase(setIterator);
-        }
     }
 }

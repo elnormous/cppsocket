@@ -16,7 +16,6 @@
 #include <fcntl.h>
 #include "Socket.hpp"
 #include "Network.hpp"
-#include "Log.hpp"
 
 namespace cppsocket
 {
@@ -24,25 +23,19 @@ namespace cppsocket
     static uint8_t TEMP_BUFFER[65536];
 
 #ifdef _WIN32
-    static inline bool initWSA()
+    static inline void initWSA()
     {
         WORD sockVersion = MAKEWORD(2, 2);
         WSADATA wsaData;
         int error = WSAStartup(sockVersion, &wsaData);
         if (error != 0)
-        {
-            Log(Log::Level::ERR) << "WSAStartup failed, error: " << error;
-            return false;
-        }
+            throw std::runtime_error("WSAStartup failed, error: " << error);
 
         if (wsaData.wVersion != sockVersion)
         {
-            Log(Log::Level::ERR) << "Incorrect Winsock version";
             WSACleanup();
-            return false;
+            throw std::runtime_error("Incorrect Winsock version");
         }
-
-        return true;
     }
 #endif
 
@@ -60,9 +53,7 @@ namespace cppsocket
             portStr = address.substr(i + 1);
         }
         else
-        {
             addressStr = address;
-        }
 
         addrinfo* info;
         int ret = getaddrinfo(addressStr.c_str(), portStr.empty() ? nullptr : portStr.c_str(), nullptr, &info);
@@ -70,8 +61,7 @@ namespace cppsocket
 #ifdef _WIN32
         if (ret != 0 && WSAGetLastError() == WSANOTINITIALISED)
         {
-            if (!initWSA()) return false;
-
+            initWSA();
             ret = getaddrinfo(addressStr.c_str(), portStr.empty() ? nullptr : portStr.c_str(), nullptr, &info);
         }
 #endif
@@ -112,7 +102,14 @@ namespace cppsocket
     {
         network.removeSocket(*this);
 
-        writeData();
+        try
+        {
+            writeData();
+        }
+        catch (...)
+        {
+        }
+
         closeSocketFd();
     }
 
@@ -198,7 +195,17 @@ namespace cppsocket
     {
         if (socketFd != INVALID_SOCKET)
         {
-            if (ready) writeData();
+            if (ready)
+            {
+                try
+                {
+                    writeData();
+                }
+                catch (...)
+                {
+                }
+            }
+
             closeSocketFd();
         }
 
@@ -225,12 +232,8 @@ namespace cppsocket
 
                 close();
 
-                Log(Log::Level::WARN) << "Failed to connect to " << remoteAddressString << ", connection timed out";
-
                 if (connectErrorCallback)
-                {
                     connectErrorCallback(*this);
-                }
             }
         }
     }
@@ -288,8 +291,6 @@ namespace cppsocket
             int error = getLastError();
             throw std::runtime_error("Failed to listen on " + ipToString(localIPAddress) + ":" + std::to_string(localPort) + ", error: " + std::to_string(error));
         }
-
-        Log(Log::Level::INFO) << "Server listening on " << ipToString(localIPAddress) << ":" << localPort;
         
         accepting = true;
         ready = true;
@@ -320,8 +321,6 @@ namespace cppsocket
 
         remoteAddressString = ipToString(remoteIPAddress) + ":" + std::to_string(remotePort);
 
-        Log(Log::Level::INFO) << "Connecting to " << remoteAddressString;
-
         sockaddr_in addr;
         memset(&addr, 0, sizeof(addr));
         addr.sin_family = AF_INET;
@@ -337,9 +336,7 @@ namespace cppsocket
 #else
                 if (error == EINPROGRESS)
 #endif
-                {
                     connecting = true;
-                }
                 else
                 {
                     if (connectErrorCallback)
@@ -352,11 +349,8 @@ namespace cppsocket
         {
             // connected
             ready = true;
-            Log(Log::Level::INFO) << "Socket connected to " << remoteAddressString;
             if (connectCallback)
-            {
                 connectCallback(*this);
-            }
         }
 
         sockaddr_in localAddr;
@@ -421,8 +415,7 @@ namespace cppsocket
 #ifdef _WIN32
         if (socketFd == INVALID_SOCKET && WSAGetLastError() == WSANOTINITIALISED)
         {
-            if (!initWSA()) return false;
-
+            initWSA();
             socketFd = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
         }
 #endif
@@ -504,32 +497,22 @@ namespace cppsocket
             {
                 int error = getLastError();
 
-                if (error == EAGAIN ||
+                if (error != EAGAIN &&
 #ifdef _WIN32
-                    error == WSAEWOULDBLOCK ||
+                    error != WSAEWOULDBLOCK &&
 #endif
-                    error == EWOULDBLOCK)
-                {
-                    Log(Log::Level::ERR) << "No sockets to accept";
-                }
-                else
-                {
+                    error != EWOULDBLOCK)
                     throw std::runtime_error("Failed to accept client, error: " + std::to_string(error));
-                }
             }
             else
             {
-                Log(Log::Level::INFO) << "Client connected from " << ipToString(address.sin_addr.s_addr) << ":" << ntohs(address.sin_port) << " to " << ipToString(localIPAddress) << ":" << localPort;
-
                 Socket socket(network, clientFd, true,
                               localIPAddress, localPort,
                               address.sin_addr.s_addr,
                               ntohs(address.sin_port));
                 
                 if (acceptCallback)
-                {
                     acceptCallback(*this, socket);
-                }
             }
         }
         else
@@ -544,11 +527,8 @@ namespace cppsocket
         {
             connecting = false;
             ready = true;
-            Log(Log::Level::INFO) << "Socket connected to " << remoteAddressString;
             if (connectCallback)
-            {
                 connectCallback(*this);
-            }
         }
 
         return writeData();
@@ -570,49 +550,36 @@ namespace cppsocket
         ssize_t size = recv(socketFd, reinterpret_cast<char*>(TEMP_BUFFER), sizeof(TEMP_BUFFER), flags);
 #endif
 
-        if (size < 0)
+        if (size > 0)
+        {
+            inData.assign(TEMP_BUFFER, TEMP_BUFFER + size);
+
+            if (readCallback)
+                readCallback(*this, inData);
+        }
+        else if (size < 0)
         {
             int error = getLastError();
 
-            if (error == EAGAIN ||
+            if (error != EAGAIN &&
 #ifdef _WIN32
-                error == WSAEWOULDBLOCK ||
+                error != WSAEWOULDBLOCK &&
 #endif
-                error == EWOULDBLOCK)
-            {
-                Log(Log::Level::WARN) << "Nothing to read from " << remoteAddressString;
-                return;
-            }
-            else if (error == ECONNRESET)
+                error != EWOULDBLOCK)
             {
                 disconnected();
-                throw std::runtime_error("Connection to " + remoteAddressString + " reset by peer");
-            }
-            else if (error == ECONNREFUSED)
-            {
-                disconnected();
-                throw std::runtime_error("Connection to " + remoteAddressString + " refused");
-            }
-            else
-            {
-                disconnected();
-                throw std::runtime_error("Failed to read from " + remoteAddressString + ", error: " + std::to_string(error));
+
+                if (error == ECONNRESET)
+                    throw std::runtime_error("Connection to " + remoteAddressString + " reset by peer");
+                else if (error == ECONNREFUSED)
+                    throw std::runtime_error("Connection to " + remoteAddressString + " refused");
+                else
+                    throw std::runtime_error("Failed to read from " + remoteAddressString + ", error: " + std::to_string(error));
             }
         }
-        else if (size == 0)
-        {
+        else // size == 0
             disconnected();
-            return;
-        }
 
-        Log(Log::Level::ALL) << "Socket received " << size << " bytes from " << remoteAddressString;
-
-        inData.assign(TEMP_BUFFER, TEMP_BUFFER + size);
-
-        if (readCallback)
-        {
-            readCallback(*this, inData);
-        }
     }
 
     void Socket::writeData()
@@ -631,50 +598,32 @@ namespace cppsocket
             int dataSize = static_cast<int>(outData.size());
             int size = ::send(socketFd, reinterpret_cast<const char*>(outData.data()), dataSize, flags);
 #else
-            ssize_t dataSize = static_cast<ssize_t>(outData.size());
-            ssize_t size = ::send(socketFd, reinterpret_cast<const char*>(outData.data()), outData.size(), flags);
+            size_t dataSize = static_cast<size_t>(outData.size());
+            ssize_t size = ::send(socketFd, reinterpret_cast<const char*>(outData.data()), dataSize, flags);
 #endif
 
             if (size < 0)
             {
                 int error = getLastError();
-                if (error == EAGAIN ||
+                if (error != EAGAIN &&
 #ifdef _WIN32
-                    error == WSAEWOULDBLOCK ||
+                    error != WSAEWOULDBLOCK &&
 #endif
-                    error == EWOULDBLOCK)
-                {
-                    Log(Log::Level::WARN) << "Can not write to " << remoteAddressString << " now";
-                }
-                else if (error == EPIPE)
+                    error != EWOULDBLOCK)
                 {
                     disconnected();
-                    throw std::runtime_error("Failed to send data to " + remoteAddressString + ", socket has been shut down");
+
+                    if (error == EPIPE)
+                        throw std::runtime_error("Failed to send data to " + remoteAddressString + ", socket has been shut down");
+                    else if (error == ECONNRESET)
+                        throw std::runtime_error("Connection to " + remoteAddressString + " reset by peer");
+                    else
+                        throw std::runtime_error("Failed to write to socket " + remoteAddressString + ", error: " + std::to_string(error));
                 }
-                else if (error == ECONNRESET)
-                {
-                    disconnected();
-                    throw std::runtime_error("Connection to " + remoteAddressString + " reset by peer");
-                }
-                else
-                {
-                    disconnected();
-                    throw std::runtime_error("Failed to write to socket " + remoteAddressString + ", error: " + std::to_string(error));
-                }
-            }
-            else if (size != dataSize)
-            {
-                Log(Log::Level::ALL) << "Socket did not send all data to " << remoteAddressString << ", sent " << size << " out of " << outData.size() << " bytes";
-            }
-            else
-            {
-                Log(Log::Level::ALL) << "Socket sent " << size << " bytes to " << remoteAddressString;
             }
 
             if (size > 0)
-            {
                 outData.erase(outData.begin(), outData.begin() + size);
-            }
         }
     }
 
@@ -684,8 +633,6 @@ namespace cppsocket
         {
             connecting = false;
             ready = false;
-
-            Log(Log::Level::WARN) << "Failed to connect to " << remoteAddressString;
 
             if (socketFd != INVALID_SOCKET)
                 closeSocketFd();
@@ -697,14 +644,10 @@ namespace cppsocket
         {
             if (ready)
             {
-                Log(Log::Level::INFO) << "Socket disconnected from " << remoteAddressString << " disconnected";
-
                 ready = false;
 
                 if (closeCallback)
-                {
                     closeCallback(*this);
-                }
 
                 if (socketFd != INVALID_SOCKET)
                     closeSocketFd();

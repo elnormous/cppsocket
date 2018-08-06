@@ -19,13 +19,11 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\Log.cpp" />
     <ClCompile Include="..\Network.cpp" />
     <ClCompile Include="..\Socket.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\Log.hpp" />
     <ClInclude Include="..\Network.hpp" />
     <ClInclude Include="..\Socket.hpp" />
   </ItemGroup>
