@@ -46,10 +46,9 @@ namespace cppsocket
     }
 #endif
 
-    void Socket::getAddress(const std::string& address, std::pair<uint32_t, uint16_t>& result)
+    std::pair<uint32_t, uint16_t> Socket::getAddress(const std::string& address)
     {
-        result.first = ANY_ADDRESS;
-        result.second = ANY_PORT;
+        std::pair<uint32_t, uint16_t> result(ANY_ADDRESS, ANY_PORT);
 
         size_t i = address.find(':');
         std::string addressStr;
@@ -88,6 +87,8 @@ namespace cppsocket
         result.second = ntohs(addr->sin_port);
 
         freeaddrinfo(info);
+
+        return result;
     }
 
     Socket::Socket(Network& aNetwork):
@@ -246,9 +247,7 @@ namespace cppsocket
     {
         ready = false;
 
-        std::pair<uint32_t, uint16_t> addr;
-
-        getAddress(address, addr);
+        std::pair<uint32_t, uint16_t> addr = getAddress(address);
 
         startAccept(addr.first, addr.second);
     }
@@ -301,8 +300,7 @@ namespace cppsocket
         ready = false;
         connecting = false;
 
-        std::pair<uint32_t, uint16_t> addr;
-        getAddress(address, addr);
+        std::pair<uint32_t, uint16_t> addr = getAddress(address);
 
         connect(addr.first, addr.second);
     }
