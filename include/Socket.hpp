@@ -349,10 +349,9 @@ namespace cppsocket
         }
 
         bool isConnecting() const { return connecting; }
-        void setConnectTimeout(float timeout)
-        {
-            connectTimeout = timeout;
-        }
+
+        float getConnectTimeout() const { return connectTimeout; }
+        void setConnectTimeout(float timeout) { connectTimeout = timeout; }
 
         void setReadCallback(const std::function<void(Socket&, const std::vector<uint8_t>&)>& newReadCallback)
         {
@@ -403,10 +402,9 @@ namespace cppsocket
         }
 
         bool isReady() const { return ready; }
-
         bool hasOutData() const { return !outData.empty(); }
 
-    protected:
+    private:
         Socket(Network& aNetwork, socket_t aSocketFd, bool aReady,
                uint32_t aLocalIPAddress, uint16_t aLocalPort,
                uint32_t aRemoteIPAddress, uint16_t aRemotePort);
@@ -812,6 +810,7 @@ namespace cppsocket
                 socketAddSet.erase(setIterator);
         }
 
+    private:
         std::vector<Socket*> sockets;
         std::set<Socket*> socketAddSet;
         std::set<Socket*> socketDeleteSet;
