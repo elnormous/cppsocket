@@ -2,7 +2,8 @@
 //  cppsocket
 //
 
-#pragma once
+#ifndef CPPSOCKET_HPP
+#define CPPSOCKET_HPP
 
 #include <cstdint>
 #include <cstring>
@@ -886,3 +887,4 @@ namespace cppsocket
         network.addSocket(*this);
     }
 }
+#endif
