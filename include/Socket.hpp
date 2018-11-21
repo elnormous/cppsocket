@@ -66,6 +66,9 @@ namespace cppsocket
         int error = WSAStartup(sockVersion, &wsaData);
         if (error != 0)
             throw std::system_error(error, std::system_category(), "WSAStartup failed");
+
+        if (LOBYTE(wsaData.wVersion) != 2 || HIBYTE(wsaData.wVersion) != 2)
+            throw std::runtime_error("Invalid WinSock version");
     }
 #endif
 
@@ -92,14 +95,26 @@ namespace cppsocket
                 addressStr = address;
 
             addrinfo* info;
+#ifdef _WIN32
+            for (;;)
+            {
+                int ret = getaddrinfo(addressStr.c_str(), portStr.empty() ? nullptr : portStr.c_str(), nullptr, &info);
+
+                if (ret != 0)
+                {
+                    int error = WSAGetLastError();
+                    if (error == WSANOTINITIALISED) initWSA();
+                    else
+                        throw std::system_error(error, std::system_category(), "Failed to get address info of " + address);
+                }
+                else
+                    break;
+            }
+#else
             int ret = getaddrinfo(addressStr.c_str(), portStr.empty() ? nullptr : portStr.c_str(), nullptr, &info);
 
-#ifdef _WIN32
-            if (ret != 0 && WSAGetLastError() == WSANOTINITIALISED)
-            {
-                initWSA();
-                ret = getaddrinfo(addressStr.c_str(), portStr.empty() ? nullptr : portStr.c_str(), nullptr, &info);
-            }
+            if (ret != 0)
+                throw std::system_error(errno, std::system_category(), "Failed to get address info of " + address);
 #endif
 
             if (ret != 0)
@@ -590,18 +605,27 @@ namespace cppsocket
 
         void createSocketFd()
         {
+#ifdef _WIN32
+            for (;;)
+            {
+                socketFd = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
+
+                if (socketFd == INVALID_SOCKET)
+                {
+                    int error = WSAGetLastError();
+                    if (error == WSANOTINITIALISED) initWSA();
+                    else
+                        throw std::system_error(error, std::system_category(), "Failed to get address info of " + address);
+                }
+                else
+                    break;
+            }
+#else
             socketFd = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
 
-#ifdef _WIN32
-            if (socketFd == INVALID_SOCKET && WSAGetLastError() == WSANOTINITIALISED)
-            {
-                initWSA();
-                socketFd = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
-            }
+            if (socketFd == -1)
+                throw std::system_error(errno, std::system_category(), "Failed to create socket");
 #endif
-
-            if (socketFd == NULL_SOCKET)
-                throw std::system_error(getLastError(), std::system_category(), "Failed to create socket");
 
             if (!blocking)
                 setFdBlocking(false);
