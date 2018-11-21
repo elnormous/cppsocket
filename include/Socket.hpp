@@ -13,6 +13,7 @@
 #include <set>
 #include <stdexcept>
 #include <string>
+#include <system_error>
 #include <vector>
 #ifdef _WIN32
 #  define NOMINMAX
@@ -64,13 +65,7 @@ namespace cppsocket
         WSADATA wsaData;
         int error = WSAStartup(sockVersion, &wsaData);
         if (error != 0)
-            throw std::runtime_error("WSAStartup failed, error: " + std::to_string(error));
-
-        if (wsaData.wVersion != sockVersion)
-        {
-            WSACleanup();
-            throw std::runtime_error("Incorrect Winsock version");
-        }
+            throw std::system_error(error, std::system_category(), "WSAStartup failed");
     }
 #endif
 
@@ -108,10 +103,7 @@ namespace cppsocket
 #endif
 
             if (ret != 0)
-            {
-                int error = getLastError();
-                throw std::runtime_error("Failed to get address info of " + address + ", error: " + std::to_string(error));
-            }
+                throw std::system_error(getLastError(), std::system_category(), "Failed to get address info of " + address);
 
             sockaddr_in* addr = reinterpret_cast<sockaddr_in*>(info->ai_addr);
             result.first = addr->sin_addr.s_addr;
@@ -249,10 +241,7 @@ namespace cppsocket
             int value = 1;
 
             if (setsockopt(socketFd, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char*>(&value), sizeof(value)) < 0)
-            {
-                int error = getLastError();
-                throw std::runtime_error("setsockopt(SO_REUSEADDR) failed, error: " + std::to_string(error));
-            }
+                throw std::system_error(getLastError(), std::system_category(), "setsockopt(SO_REUSEADDR) failed");
 
             sockaddr_in serverAddress;
             memset(&serverAddress, 0, sizeof(serverAddress));
@@ -261,16 +250,10 @@ namespace cppsocket
             serverAddress.sin_addr.s_addr = address;
 
             if (bind(socketFd, reinterpret_cast<sockaddr*>(&serverAddress), sizeof(serverAddress)) < 0)
-            {
-                int error = getLastError();
-                throw std::runtime_error("Failed to bind server socket to port " + std::to_string(localPort) + ", error: " + std::to_string(error));
-            }
+                throw std::system_error(getLastError(), std::system_category(), "Failed to bind server socket to port " + std::to_string(localPort));
 
             if (listen(socketFd, WAITING_QUEUE_SIZE) < 0)
-            {
-                int error = getLastError();
-                throw std::runtime_error("Failed to listen on " + ipToString(localIPAddress) + ":" + std::to_string(localPort) + ", error: " + std::to_string(error));
-            }
+                throw std::system_error(getLastError(), std::system_category(), "Failed to listen on " + ipToString(localIPAddress) + ":" + std::to_string(localPort));
 
             accepting = true;
             ready = true;
@@ -312,18 +295,21 @@ namespace cppsocket
                 int error = getLastError();
 
 #ifdef _WIN32
-                if (error == WSAEWOULDBLOCK)
+                if (error != WSAEWOULDBLOCK &&
+                    error != WSAEINPROGRESS)
 #else
-                    if (error == EINPROGRESS)
+                if (error != EAGAIN &&
+                    error != EWOULDBLOCK &&
+                    error != EINPROGRESS)
 #endif
-                        connecting = true;
-                    else
-                    {
-                        if (connectErrorCallback)
-                            connectErrorCallback(*this);
+                {
+                    if (connectErrorCallback)
+                        connectErrorCallback(*this);
 
-                        throw std::runtime_error("Failed to connect to " + remoteAddressString + ", error: " + std::to_string(error));
-                    }
+                    throw std::system_error(error, std::system_category(), "Failed to connect to " + remoteAddressString);
+                }
+
+                connecting = true;
             }
             else
             {
@@ -343,7 +329,7 @@ namespace cppsocket
                 connecting = false;
                 if (connectErrorCallback)
                     connectErrorCallback(*this);
-                throw std::runtime_error("Failed to get address of the socket connecting to " + remoteAddressString + ", error: " + std::to_string(error));
+                throw std::system_error(error, std::system_category(), "Failed to get address of the socket connecting to " + remoteAddressString);
             }
 
             localIPAddress = localAddr.sin_addr.s_addr;
@@ -428,12 +414,15 @@ namespace cppsocket
                 {
                     int error = getLastError();
 
-                    if (error != EAGAIN &&
 #ifdef _WIN32
-                        error != WSAEWOULDBLOCK &&
+                    if (error != WSAEWOULDBLOCK &&
+                        error != WSAEINPROGRESS)
+#else
+                    if (error != EAGAIN &&
+                        error != EWOULDBLOCK &&
+                        error != EINPROGRESS)
 #endif
-                        error != EWOULDBLOCK)
-                        throw std::runtime_error("Failed to accept client, error: " + std::to_string(error));
+                        throw std::system_error(error, std::system_category(), "Failed to accept client");
                 }
                 else
                 {
@@ -492,20 +481,23 @@ namespace cppsocket
             {
                 int error = getLastError();
 
-                if (error != EAGAIN &&
 #ifdef _WIN32
-                    error != WSAEWOULDBLOCK &&
+                if (error != WSAEWOULDBLOCK &&
+                    error != WSAEINPROGRESS)
+#else
+                if (error != EAGAIN &&
+                    error != EWOULDBLOCK &&
+                    error != EINPROGRESS)
 #endif
-                    error != EWOULDBLOCK)
                 {
                     disconnected();
 
                     if (error == ECONNRESET)
-                        throw std::runtime_error("Connection to " + remoteAddressString + " reset by peer");
+                        throw std::system_error(error, std::system_category(), "Connection to " + remoteAddressString + " reset by peer");
                     else if (error == ECONNREFUSED)
-                        throw std::runtime_error("Connection to " + remoteAddressString + " refused");
+                        throw std::system_error(error, std::system_category(), "Connection to " + remoteAddressString + " refused");
                     else
-                        throw std::runtime_error("Failed to read from " + remoteAddressString + ", error: " + std::to_string(error));
+                        throw std::system_error(error, std::system_category(), "Failed to read from " + remoteAddressString);
                 }
             }
             else // size == 0
@@ -536,20 +528,23 @@ namespace cppsocket
                 if (size < 0)
                 {
                     int error = getLastError();
-                    if (error != EAGAIN &&
 #ifdef _WIN32
-                        error != WSAEWOULDBLOCK &&
+                    if (error != WSAEWOULDBLOCK &&
+                        error != WSAEINPROGRESS)
+#else
+                    if (error != EAGAIN &&
+                        error != EWOULDBLOCK &&
+                        error != EINPROGRESS)
 #endif
-                        error != EWOULDBLOCK)
                     {
                         disconnected();
 
                         if (error == EPIPE)
-                            throw std::runtime_error("Failed to send data to " + remoteAddressString + ", socket has been shut down");
+                            throw std::system_error(error, std::system_category(), "Failed to send data to " + remoteAddressString + ", socket has been shut down");
                         else if (error == ECONNRESET)
-                            throw std::runtime_error("Connection to " + remoteAddressString + " reset by peer");
+                            throw std::system_error(error, std::system_category(), "Connection to " + remoteAddressString + " reset by peer");
                         else
-                            throw std::runtime_error("Failed to write to socket " + remoteAddressString + ", error: " + std::to_string(error));
+                            throw std::system_error(error, std::system_category(), "Failed to write to socket " + remoteAddressString);
                     }
                 }
 
@@ -598,7 +593,7 @@ namespace cppsocket
             socketFd = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
 
 #ifdef _WIN32
-            if (socketFd == NULL_SOCKET && WSAGetLastError() == WSANOTINITIALISED)
+            if (socketFd == INVALID_SOCKET && WSAGetLastError() == WSANOTINITIALISED)
             {
                 initWSA();
                 socketFd = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
@@ -606,10 +601,7 @@ namespace cppsocket
 #endif
 
             if (socketFd == NULL_SOCKET)
-            {
-                int error = getLastError();
-                throw std::runtime_error("Failed to create socket, error: " + std::to_string(error));
-            }
+                throw std::system_error(getLastError(), std::system_category(), "Failed to create socket");
 
             if (!blocking)
                 setFdBlocking(false);
@@ -617,10 +609,7 @@ namespace cppsocket
 #ifdef __APPLE__
             int set = 1;
             if (setsockopt(socketFd, SOL_SOCKET, SO_NOSIGPIPE, &set, sizeof(int)) != 0)
-            {
-                int error = getLastError();
-                throw std::runtime_error("Failed to set socket option, error: " + std::to_string(error));
-            }
+                throw std::system_error(errno, std::system_category(), "Failed to set socket option");
 #endif
         }
 
@@ -645,15 +634,15 @@ namespace cppsocket
 #ifdef _WIN32
             unsigned long mode = block ? 0 : 1;
             if (ioctlsocket(socketFd, FIONBIO, &mode) != 0)
-                throw std::runtime_error("Failed to set socket mode");
+                throw std::system_error(WSAGetLastError(), std::system_category(), "Failed to set socket mode");
 #else
             int flags = fcntl(socketFd, F_GETFL, 0);
             if (flags < 0)
-                throw std::runtime_error("Failed to get socket flags");
+                throw std::system_error(errno, std::system_category(), "Failed to get socket flags");
             flags = block ? (flags & ~O_NONBLOCK) : (flags | O_NONBLOCK);
 
             if (fcntl(socketFd, F_SETFL, flags) != 0)
-                throw std::runtime_error("Failed to set socket flags");
+                throw std::system_error(errno, std::system_category(), "Failed to set socket flags");
 #endif
         }
 
@@ -751,13 +740,12 @@ namespace cppsocket
             {
 #ifdef _WIN32
                 if (WSAPoll(pollFds.data(), static_cast<ULONG>(pollFds.size()), 0) < 0)
+                    throw std::system_error(WSAGetLastError(), std::system_category(), "Poll failed");
 #else
-                    if (poll(pollFds.data(), static_cast<nfds_t>(pollFds.size()), 0) < 0)
+                if (poll(pollFds.data(), static_cast<nfds_t>(pollFds.size()), 0) < 0)
+                    throw std::system_error(errno, std::system_category(), "Poll failed");
 #endif
-                    {
-                        int error = getLastError();
-                        throw std::runtime_error("Poll failed, error: " + std::to_string(error));
-                    }
+
 
                 for (pollfd& pollFd : pollFds)
                 {
