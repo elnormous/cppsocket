@@ -15,17 +15,17 @@
 #include <string>
 #include <vector>
 #ifdef _WIN32
-#define NOMINMAX
-#include <winsock2.h>
-#include <ws2tcpip.h>
+#  define NOMINMAX
+#  include <winsock2.h>
+#  include <ws2tcpip.h>
 typedef SOCKET socket_t;
 static const socket_t NULL_SOCKET = INVALID_SOCKET;
 #else
-#include <sys/socket.h>
-#include <netdb.h>
-#include <netinet/in.h>
-#include <poll.h>
-#include <unistd.h>
+#  include <sys/socket.h>
+#  include <netdb.h>
+#  include <netinet/in.h>
+#  include <poll.h>
+#  include <unistd.h>
 typedef int socket_t;
 static const socket_t NULL_SOCKET = -1;
 #endif
@@ -888,4 +888,4 @@ namespace cppsocket
         network.addSocket(*this);
     }
 }
-#endif
+#endif // CPPSOCKET_HPP
