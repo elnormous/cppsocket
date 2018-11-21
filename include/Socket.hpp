@@ -26,7 +26,7 @@ typedef SOCKET socket_t;
 #include <poll.h>
 #include <unistd.h>
 typedef int socket_t;
-#define INVALID_SOCKET -1
+static const int INVALID_SOCKET = -1;
 #endif
 #include <errno.h>
 #include <fcntl.h>
