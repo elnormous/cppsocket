@@ -19,6 +19,7 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 typedef SOCKET socket_t;
+static const socket_t NULL_SOCKET = INVALID_SOCKET;
 #else
 #include <sys/socket.h>
 #include <netdb.h>
@@ -26,7 +27,7 @@ typedef SOCKET socket_t;
 #include <poll.h>
 #include <unistd.h>
 typedef int socket_t;
-static const int INVALID_SOCKET = -1;
+static const socket_t NULL_SOCKET = -1;
 #endif
 #include <errno.h>
 #include <fcntl.h>
@@ -154,7 +155,7 @@ namespace cppsocket
 
                 remoteAddressString = ipToString(remoteIPAddress) + ":" + std::to_string(remotePort);
 
-                other.socketFd = INVALID_SOCKET;
+                other.socketFd = NULL_SOCKET;
                 other.ready = false;
                 other.blocking = true;
                 other.localIPAddress = 0;
@@ -172,7 +173,7 @@ namespace cppsocket
 
         void close()
         {
-            if (socketFd != INVALID_SOCKET)
+            if (socketFd != NULL_SOCKET)
             {
                 if (ready)
                 {
@@ -219,7 +220,7 @@ namespace cppsocket
 
         void startRead()
         {
-            if (socketFd == INVALID_SOCKET)
+            if (socketFd == NULL_SOCKET)
                 throw std::runtime_error("Can not start reading, invalid socket");
 
             ready = true;
@@ -238,7 +239,7 @@ namespace cppsocket
         {
             ready = false;
 
-            if (socketFd != INVALID_SOCKET)
+            if (socketFd != NULL_SOCKET)
                 close();
 
             createSocketFd();
@@ -290,7 +291,7 @@ namespace cppsocket
             ready = false;
             connecting = false;
 
-            if (socketFd != INVALID_SOCKET)
+            if (socketFd != NULL_SOCKET)
                 close();
 
             createSocketFd();
@@ -381,7 +382,7 @@ namespace cppsocket
 
         void send(std::vector<uint8_t> buffer)
         {
-            if (socketFd == INVALID_SOCKET)
+            if (socketFd == NULL_SOCKET)
                 throw std::runtime_error("Invalid socket");
 
             outData.insert(outData.end(), buffer.begin(), buffer.end());
@@ -398,7 +399,7 @@ namespace cppsocket
         {
             blocking = newBlocking;
 
-            if (socketFd != INVALID_SOCKET)
+            if (socketFd != NULL_SOCKET)
                 setFdBlocking(newBlocking);
         }
 
@@ -423,7 +424,7 @@ namespace cppsocket
 
                 socket_t clientFd = ::accept(socketFd, reinterpret_cast<sockaddr*>(&address), &addressLength);
 
-                if (clientFd == INVALID_SOCKET)
+                if (clientFd == NULL_SOCKET)
                 {
                     int error = getLastError();
 
@@ -564,7 +565,7 @@ namespace cppsocket
                 connecting = false;
                 ready = false;
 
-                if (socketFd != INVALID_SOCKET)
+                if (socketFd != NULL_SOCKET)
                     closeSocketFd();
 
                 if (connectErrorCallback)
@@ -579,7 +580,7 @@ namespace cppsocket
                     if (closeCallback)
                         closeCallback(*this);
 
-                    if (socketFd != INVALID_SOCKET)
+                    if (socketFd != NULL_SOCKET)
                         closeSocketFd();
 
                     localIPAddress = 0;
@@ -597,14 +598,14 @@ namespace cppsocket
             socketFd = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
 
 #ifdef _WIN32
-            if (socketFd == INVALID_SOCKET && WSAGetLastError() == WSANOTINITIALISED)
+            if (socketFd == NULL_SOCKET && WSAGetLastError() == WSANOTINITIALISED)
             {
                 initWSA();
                 socketFd = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
             }
 #endif
 
-            if (socketFd == INVALID_SOCKET)
+            if (socketFd == NULL_SOCKET)
             {
                 int error = getLastError();
                 throw std::runtime_error("Failed to create socket, error: " + std::to_string(error));
@@ -625,20 +626,20 @@ namespace cppsocket
 
         void closeSocketFd()
         {
-            if (socketFd != INVALID_SOCKET)
+            if (socketFd != NULL_SOCKET)
             {
 #ifdef _WIN32
                 closesocket(socketFd);
 #else
                 ::close(socketFd);
 #endif
-                socketFd = INVALID_SOCKET;
+                socketFd = NULL_SOCKET;
             }
         }
 
         void setFdBlocking(bool block)
         {
-            if (socketFd == INVALID_SOCKET)
+            if (socketFd == NULL_SOCKET)
                 throw std::runtime_error("Invalid socket");
 
 #ifdef _WIN32
@@ -658,7 +659,7 @@ namespace cppsocket
 
         Network& network;
 
-        socket_t socketFd = INVALID_SOCKET;
+        socket_t socketFd = NULL_SOCKET;
 
         bool ready = false;
         bool blocking = true;
@@ -736,7 +737,7 @@ namespace cppsocket
 
             for (auto socket : sockets)
             {
-                if (socket->socketFd != INVALID_SOCKET)
+                if (socket->socketFd != NULL_SOCKET)
                 {
                     pollfd pollFd;
                     pollFd.fd = socket->socketFd;
@@ -864,7 +865,7 @@ namespace cppsocket
 
         remoteAddressString = ipToString(remoteIPAddress) + ":" + std::to_string(remotePort);
 
-        other.socketFd = INVALID_SOCKET;
+        other.socketFd = NULL_SOCKET;
         other.ready = false;
         other.blocking = true;
         other.localIPAddress = 0;
