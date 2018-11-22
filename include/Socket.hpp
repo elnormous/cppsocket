@@ -44,9 +44,9 @@ namespace cppsocket
         uint8_t* ptr = reinterpret_cast<uint8_t*>(&ip);
 
         return std::to_string(static_cast<uint32_t>(ptr[0])) + "." +
-        std::to_string(static_cast<uint32_t>(ptr[1])) + "." +
-        std::to_string(static_cast<uint32_t>(ptr[2])) + "." +
-        std::to_string(static_cast<uint32_t>(ptr[3]));
+            std::to_string(static_cast<uint32_t>(ptr[1])) + "." +
+            std::to_string(static_cast<uint32_t>(ptr[2])) + "." +
+            std::to_string(static_cast<uint32_t>(ptr[3]));
     }
 
     inline int getLastError()
@@ -58,43 +58,43 @@ namespace cppsocket
 #endif
     }
 
+    inline std::pair<uint32_t, uint16_t> getAddress(const std::string& address)
+    {
+        std::pair<uint32_t, uint16_t> result(ANY_ADDRESS, ANY_PORT);
+
+        size_t i = address.find(':');
+        std::string addressStr;
+        std::string portStr;
+
+        if (i != std::string::npos)
+        {
+            addressStr = address.substr(0, i);
+            portStr = address.substr(i + 1);
+        }
+        else
+            addressStr = address;
+
+        addrinfo* info;
+        int ret = getaddrinfo(addressStr.c_str(), portStr.empty() ? nullptr : portStr.c_str(), nullptr, &info);
+
+        if (ret != 0)
+            throw std::system_error(getLastError(), std::system_category(), "Failed to get address info of " + address);
+
+        sockaddr_in* addr = reinterpret_cast<sockaddr_in*>(info->ai_addr);
+        result.first = addr->sin_addr.s_addr;
+        result.second = ntohs(addr->sin_port);
+
+        freeaddrinfo(info);
+
+        return result;
+    }
+
     class Network;
 
     class Socket final
     {
         friend Network;
     public:
-        static std::pair<uint32_t, uint16_t> getAddress(const std::string& address)
-        {
-            std::pair<uint32_t, uint16_t> result(ANY_ADDRESS, ANY_PORT);
-
-            size_t i = address.find(':');
-            std::string addressStr;
-            std::string portStr;
-
-            if (i != std::string::npos)
-            {
-                addressStr = address.substr(0, i);
-                portStr = address.substr(i + 1);
-            }
-            else
-                addressStr = address;
-
-            addrinfo* info;
-            int ret = getaddrinfo(addressStr.c_str(), portStr.empty() ? nullptr : portStr.c_str(), nullptr, &info);
-
-            if (ret != 0)
-                throw std::system_error(getLastError(), std::system_category(), "Failed to get address info of " + address);
-
-            sockaddr_in* addr = reinterpret_cast<sockaddr_in*>(info->ai_addr);
-            result.first = addr->sin_addr.s_addr;
-            result.second = ntohs(addr->sin_port);
-
-            freeaddrinfo(info);
-
-            return result;
-        }
-
         Socket(Network& aNetwork);
         ~Socket();
 
@@ -111,9 +111,9 @@ namespace cppsocket
                 socketFd = other.socketFd;
                 ready = other.ready;
                 blocking = other.blocking;
-                localIPAddress = other.localIPAddress;
+                localAddress = other.localAddress;
                 localPort = other.localPort;
-                remoteIPAddress = other.remoteIPAddress;
+                remoteAddress = other.remoteAddress;
                 remotePort = other.remotePort;
                 connectTimeout = other.connectTimeout;
                 timeSinceConnect = other.timeSinceConnect;
@@ -126,14 +126,14 @@ namespace cppsocket
                 connectErrorCallback = std::move(other.connectErrorCallback);
                 outData = std::move(other.outData);
 
-                remoteAddressString = ipToString(remoteIPAddress) + ":" + std::to_string(remotePort);
+                remoteAddressString = ipToString(remoteAddress) + ":" + std::to_string(remotePort);
 
                 other.socketFd = NULL_SOCKET;
                 other.ready = false;
                 other.blocking = true;
-                other.localIPAddress = 0;
+                other.localAddress = 0;
                 other.localPort = 0;
-                other.remoteIPAddress = 0;
+                other.remoteAddress = 0;
                 other.remotePort = 0;
                 other.accepting = false;
                 other.connecting = false;
@@ -162,9 +162,9 @@ namespace cppsocket
                 closeSocketFd();
             }
 
-            localIPAddress = 0;
+            localAddress = 0;
             localPort = 0;
-            remoteIPAddress = 0;
+            remoteAddress = 0;
             remotePort = 0;
             ready = false;
             accepting = false;
@@ -208,7 +208,7 @@ namespace cppsocket
             startAccept(addr.first, addr.second);
         }
 
-        void startAccept(uint32_t address, uint16_t newPort)
+        void startAccept(uint32_t address, uint16_t port)
         {
             ready = false;
 
@@ -217,8 +217,8 @@ namespace cppsocket
 
             createSocketFd();
 
-            localIPAddress = address;
-            localPort = newPort;
+            localAddress = address;
+            localPort = port;
             int value = 1;
 
             if (setsockopt(socketFd, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char*>(&value), sizeof(value)) < 0)
@@ -234,7 +234,7 @@ namespace cppsocket
                 throw std::system_error(getLastError(), std::system_category(), "Failed to bind server socket to port " + std::to_string(localPort));
 
             if (listen(socketFd, WAITING_QUEUE_SIZE) < 0)
-                throw std::system_error(getLastError(), std::system_category(), "Failed to listen on " + ipToString(localIPAddress) + ":" + std::to_string(localPort));
+                throw std::system_error(getLastError(), std::system_category(), "Failed to listen on " + ipToString(localAddress) + ":" + std::to_string(localPort));
 
             accepting = true;
             ready = true;
@@ -260,15 +260,15 @@ namespace cppsocket
 
             createSocketFd();
 
-            remoteIPAddress = address;
+            remoteAddress = address;
             remotePort = newPort;
 
-            remoteAddressString = ipToString(remoteIPAddress) + ":" + std::to_string(remotePort);
+            remoteAddressString = ipToString(remoteAddress) + ":" + std::to_string(remotePort);
 
             sockaddr_in addr;
             memset(&addr, 0, sizeof(addr));
             addr.sin_family = AF_INET;
-            addr.sin_addr.s_addr = remoteIPAddress;
+            addr.sin_addr.s_addr = remoteAddress;
             addr.sin_port = htons(remotePort);
 
             if (::connect(socketFd, reinterpret_cast<const sockaddr*>(&addr), sizeof(addr)) < 0)
@@ -313,7 +313,7 @@ namespace cppsocket
                 throw std::system_error(error, std::system_category(), "Failed to get address of the socket connecting to " + remoteAddressString);
             }
 
-            localIPAddress = localAddr.sin_addr.s_addr;
+            localAddress = localAddr.sin_addr.s_addr;
             localPort = ntohs(localAddr.sin_port);
         }
 
@@ -355,10 +355,10 @@ namespace cppsocket
             outData.insert(outData.end(), buffer.begin(), buffer.end());
         }
 
-        uint32_t getLocalIPAddress() const { return localIPAddress; }
+        uint32_t getLocalAddress() const { return localAddress; }
         uint16_t getLocalPort() const { return localPort; }
 
-        uint32_t getRemoteIPAddress() const { return remoteIPAddress; }
+        uint32_t getRemoteAddress() const { return remoteAddress; }
         uint16_t getRemotePort() const { return remotePort; }
 
         bool isBlocking() const { return blocking; }
@@ -375,8 +375,8 @@ namespace cppsocket
 
     private:
         Socket(Network& aNetwork, socket_t aSocketFd, bool aReady,
-               uint32_t aLocalIPAddress, uint16_t aLocalPort,
-               uint32_t aRemoteIPAddress, uint16_t aRemotePort);
+               uint32_t aLocalAddress, uint16_t aLocalPort,
+               uint32_t aRemoteAddress, uint16_t aRemotePort);
 
         void read()
         {
@@ -408,7 +408,7 @@ namespace cppsocket
                 else
                 {
                     Socket socket(network, clientFd, true,
-                                  localIPAddress, localPort,
+                                  localAddress, localPort,
                                   address.sin_addr.s_addr,
                                   ntohs(address.sin_port));
 
@@ -559,9 +559,9 @@ namespace cppsocket
                     if (socketFd != NULL_SOCKET)
                         closeSocketFd();
 
-                    localIPAddress = 0;
+                    localAddress = 0;
                     localPort = 0;
-                    remoteIPAddress = 0;
+                    remoteAddress = 0;
                     remotePort = 0;
                     ready = false;
                     outData.clear();
@@ -626,10 +626,10 @@ namespace cppsocket
         bool ready = false;
         bool blocking = true;
 
-        uint32_t localIPAddress = 0;
+        uint32_t localAddress = 0;
         uint16_t localPort = 0;
 
-        uint32_t remoteIPAddress = 0;
+        uint32_t remoteAddress = 0;
         uint16_t remotePort = 0;
 
         float connectTimeout = 10.0f;
@@ -830,9 +830,9 @@ namespace cppsocket
         socketFd(other.socketFd),
         ready(other.ready),
         blocking(other.blocking),
-        localIPAddress(other.localIPAddress),
+        localAddress(other.localAddress),
         localPort(other.localPort),
-        remoteIPAddress(other.remoteIPAddress),
+        remoteAddress(other.remoteAddress),
         remotePort(other.remotePort),
         connectTimeout(other.connectTimeout),
         timeSinceConnect(other.timeSinceConnect),
@@ -847,14 +847,14 @@ namespace cppsocket
     {
         network.addSocket(*this);
 
-        remoteAddressString = ipToString(remoteIPAddress) + ":" + std::to_string(remotePort);
+        remoteAddressString = ipToString(remoteAddress) + ":" + std::to_string(remotePort);
 
         other.socketFd = NULL_SOCKET;
         other.ready = false;
         other.blocking = true;
-        other.localIPAddress = 0;
+        other.localAddress = 0;
         other.localPort = 0;
-        other.remoteIPAddress = 0;
+        other.remoteAddress = 0;
         other.remotePort = 0;
         other.connecting = false;
         other.connectTimeout = 10.0f;
@@ -862,13 +862,13 @@ namespace cppsocket
     }
 
     Socket::Socket(Network& aNetwork, socket_t aSocketFd, bool aReady,
-           uint32_t aLocalIPAddress, uint16_t aLocalPort,
-           uint32_t aRemoteIPAddress, uint16_t aRemotePort):
+           uint32_t aLocalAddress, uint16_t aLocalPort,
+           uint32_t aRemoteAddress, uint16_t aRemotePort):
         network(aNetwork), socketFd(aSocketFd), ready(aReady),
-        localIPAddress(aLocalIPAddress), localPort(aLocalPort),
-        remoteIPAddress(aRemoteIPAddress), remotePort(aRemotePort)
+        localAddress(aLocalAddress), localPort(aLocalPort),
+        remoteAddress(aRemoteAddress), remotePort(aRemotePort)
     {
-        remoteAddressString = ipToString(remoteIPAddress) + ":" + std::to_string(remotePort);
+        remoteAddressString = ipToString(remoteAddress) + ":" + std::to_string(remotePort);
         network.addSocket(*this);
     }
 }

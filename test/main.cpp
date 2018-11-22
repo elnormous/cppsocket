@@ -45,7 +45,7 @@ int main(int argc, const char* argv[])
                 c.startRead();
                 c.send({'t', 'e', 's', 't', '\0'});
                 c.setCloseCallback([&clientSockets](cppsocket::Socket& socket) {
-                    std::cout << "Client at " << cppsocket::ipToString(socket.getRemoteIPAddress()) << " disconnected" << std::endl;
+                    std::cout << "Client at " << cppsocket::ipToString(socket.getRemoteAddress()) << " disconnected" << std::endl;
 
                     for (auto i = clientSockets.begin(); i != clientSockets.end();)
                     {
@@ -69,17 +69,17 @@ int main(int argc, const char* argv[])
             client.connect(address);
 
             client.setReadCallback([](cppsocket::Socket& socket, const std::vector<uint8_t>& data) {
-                std::cout << "Got data: " << data.data() << " from " << cppsocket::ipToString(socket.getRemoteIPAddress()) << std::endl;
+                std::cout << "Got data: " << data.data() << " from " << cppsocket::ipToString(socket.getRemoteAddress()) << std::endl;
             });
 
             client.setConnectCallback([](cppsocket::Socket& socket) {
-                std::cout << "Connected to " << cppsocket::ipToString(socket.getRemoteIPAddress()) << std::endl;
+                std::cout << "Connected to " << cppsocket::ipToString(socket.getRemoteAddress()) << std::endl;
 
                 socket.send({'t', 'e', 's', 't', '\0'});
             });
 
             client.setConnectErrorCallback([&client, address](cppsocket::Socket& socket) {
-                std::cout << "Failed to connected to " << cppsocket::ipToString(socket.getRemoteIPAddress()) << std::endl;
+                std::cout << "Failed to connected to " << cppsocket::ipToString(socket.getRemoteAddress()) << std::endl;
 
                 client.connect(address);
             });
