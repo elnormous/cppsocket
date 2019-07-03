@@ -22,7 +22,7 @@
 #  include <ws2tcpip.h>
 #  undef NOMINMAX
 #  undef WIN32_LEAN_AND_MEAN
-typedef SOCKET socket_t;
+using socket_t = SOCKET;
 static const socket_t NULL_SOCKET = INVALID_SOCKET;
 #else
 #  include <sys/socket.h>
@@ -30,7 +30,7 @@ static const socket_t NULL_SOCKET = INVALID_SOCKET;
 #  include <netinet/in.h>
 #  include <poll.h>
 #  include <unistd.h>
-typedef int socket_t;
+using socket_t = int;
 static const socket_t NULL_SOCKET = -1;
 #endif
 #include <errno.h>
@@ -38,9 +38,9 @@ static const socket_t NULL_SOCKET = -1;
 
 namespace cppsocket
 {
-    static const uint32_t ANY_ADDRESS = 0;
-    static const uint16_t ANY_PORT = 0;
-    static const int WAITING_QUEUE_SIZE = 5;
+    static constexpr uint32_t ANY_ADDRESS = 0;
+    static constexpr uint16_t ANY_PORT = 0;
+    static constexpr int WAITING_QUEUE_SIZE = 5;
 
     inline std::string ipToString(uint32_t ip)
     {
