@@ -16,28 +16,38 @@
 #include <system_error>
 #include <vector>
 #ifdef _WIN32
-#  define WIN32_LEAN_AND_MEAN
-#  define NOMINMAX
+#  pragma push_macro("WIN32_LEAN_AND_MEAN")
+#  pragma push_macro("NOMINMAX")
+#  ifndef WIN32_LEAN_AND_MEAN
+#    define WIN32_LEAN_AND_MEAN
+#  endif
+#  ifndef NOMINMAX
+#    define NOMINMAX
+#  endif
 #  include <winsock2.h>
 #  include <ws2tcpip.h>
-#  undef NOMINMAX
-#  undef WIN32_LEAN_AND_MEAN
-using socket_t = SOCKET;
-static const socket_t NULL_SOCKET = INVALID_SOCKET;
+#  pragma pop_macro("WIN32_LEAN_AND_MEAN")
+#  pragma pop_macro("NOMINMAX")
 #else
 #  include <sys/socket.h>
 #  include <netdb.h>
 #  include <netinet/in.h>
 #  include <poll.h>
 #  include <unistd.h>
-using socket_t = int;
-static const socket_t NULL_SOCKET = -1;
 #endif
 #include <errno.h>
 #include <fcntl.h>
 
 namespace cppsocket
 {
+#ifdef _WIN32
+    using socket_t = SOCKET;
+    static constexpr socket_t NULL_SOCKET = INVALID_SOCKET;
+#else
+    using socket_t = int;
+    static constexpr socket_t NULL_SOCKET = -1;
+#endif
+
     static constexpr uint32_t ANY_ADDRESS = 0;
     static constexpr uint16_t ANY_PORT = 0;
     static constexpr int WAITING_QUEUE_SIZE = 5;
