@@ -62,7 +62,55 @@ namespace cppsocket
             std::to_string(static_cast<uint32_t>(ptr[3]));
     }
 
-    inline int getLastError()
+#ifdef _WIN32
+    class WinSock final
+    {
+    public:
+        WinSock()
+        {
+            WSADATA wsaData;
+            const int error = WSAStartup(MAKEWORD(2, 2), &wsaData);
+            if (error != 0)
+                throw std::system_error(error, std::system_category(), "WSAStartup failed");
+
+            if (LOBYTE(wsaData.wVersion) != 2 || HIBYTE(wsaData.wVersion) != 2)
+            {
+                WSACleanup();
+                throw std::runtime_error("Invalid WinSock version");
+            }
+
+            started = true;
+        }
+
+        ~WinSock()
+        {
+            if (started) WSACleanup();
+        }
+
+        WinSock(const WinSock&) = delete;
+        WinSock& operator=(const WinSock&) = delete;
+
+        WinSock(WinSock&& other) noexcept:
+            started(other.started)
+        {
+            other.started = false;
+        }
+
+        WinSock& operator=(WinSock&& other) noexcept
+        {
+            if (&other == this) return *this;
+            if (started) WSACleanup();
+            started = other.started;
+            other.started = false;
+            return *this;
+        }
+
+    private:
+        bool started = false;
+    };
+#endif
+
+    inline int getLastError() noexcept
     {
 #ifdef _WIN32
         return WSAGetLastError();
@@ -689,19 +737,6 @@ namespace cppsocket
             previousTime = std::chrono::steady_clock::now();
         }
 
-        ~Network()
-        {
-#ifdef _WIN32
-            if (wsaStarted) WSACleanup();
-#endif
-        }
-
-        Network(const Network&) = delete;
-        Network& operator=(const Network&) = delete;
-
-        Network(Network&&) = delete;
-        Network& operator=(Network&&) = delete;
-
         void update()
         {
             for (Socket* socket : socketDeleteSet)
@@ -810,7 +845,7 @@ namespace cppsocket
         }
 
 #ifdef _WIN32
-        bool wsaStarted = false;
+        WinSock winSock;
 #endif
 
         std::vector<Socket*> sockets;
