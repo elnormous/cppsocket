@@ -718,22 +718,6 @@ namespace cppsocket
     public:
         Network()
         {
-#ifdef _WIN32
-            WORD sockVersion = MAKEWORD(2, 2);
-            WSADATA wsaData;
-            int error = WSAStartup(sockVersion, &wsaData);
-            if (error != 0)
-                throw std::system_error(error, std::system_category(), "WSAStartup failed");
-
-            if (LOBYTE(wsaData.wVersion) != 2 || HIBYTE(wsaData.wVersion) != 2)
-            {
-                WSACleanup();
-                throw std::runtime_error("Invalid WinSock version");
-            }
-
-            wsaStarted = true;
-#endif
-
             previousTime = std::chrono::steady_clock::now();
         }
 
