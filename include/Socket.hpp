@@ -66,47 +66,69 @@ namespace cppsocket
     class WinSock final
     {
     public:
-        WinSock()
+        WinSock():
+            version(start(MAKEWORD(2, 2)))
         {
-            WSADATA wsaData;
-            const int error = WSAStartup(MAKEWORD(2, 2), &wsaData);
-            if (error != 0)
-                throw std::system_error(error, std::system_category(), "WSAStartup failed");
-
-            if (LOBYTE(wsaData.wVersion) != 2 || HIBYTE(wsaData.wVersion) != 2)
-            {
-                WSACleanup();
-                throw std::runtime_error("Invalid WinSock version");
-            }
-
-            started = true;
         }
 
         ~WinSock()
         {
-            if (started) WSACleanup();
+            if (version) WSACleanup();
         }
 
-        WinSock(const WinSock&) = delete;
-        WinSock& operator=(const WinSock&) = delete;
+        WinSock(const WinSock& other):
+            version(other.version ? start(other.version) : 0)
+        {
+        }
+
+        WinSock& operator=(const WinSock& other)
+        {
+            if (&other == this) return *this;
+            if (version != other.version)
+            {
+                if (version)
+                {
+                    WSACleanup();
+                    version = 0;
+                }
+
+                if (other.version) version = start(other.version);
+            }
+        }
 
         WinSock(WinSock&& other) noexcept:
-            started(other.started)
+            version(other.version)
         {
-            other.started = false;
+            other.version = 0;
         }
 
         WinSock& operator=(WinSock&& other) noexcept
         {
             if (&other == this) return *this;
-            if (started) WSACleanup();
-            started = other.started;
-            other.started = false;
+            if (version) WSACleanup();
+            version = other.version;
+            other.version = 0;
             return *this;
         }
 
     private:
-        bool started = false;
+        static WORD start(WORD version)
+        {
+            WSADATA wsaData;
+            const int error = WSAStartup(version, &wsaData);
+            if (error != 0)
+                throw std::system_error(error, std::system_category(), "WSAStartup failed");
+
+            if (wsaData.wVersion != version)
+            {
+                WSACleanup();
+                throw std::runtime_error("Invalid WinSock version");
+            }
+
+            return wsaData.wVersion;
+        }
+
+        WORD version = 0;
     };
 #endif
 
